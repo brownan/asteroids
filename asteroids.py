@@ -61,6 +61,7 @@ class Game(object):
         self.e.append( entity.Asteroid(1,.5))
 
         self.t = 0
+        self.frameno = 0
 
     def draw(self):
 
@@ -103,6 +104,11 @@ class Game(object):
         """Periodic update function"""
         # Set a callback for 20ms
         glutTimerFunc(20, self.update, 0)
+
+        self.frameno += 1
+        if self.frameno > 100:
+            import sys
+            sys.exit(0)
 
         # Change things here
         for e in self.e:

@@ -23,8 +23,6 @@ class _Material(object):
         self.specular = specular
         self.emission = emission
 
-        print repr(self)
-
     def __repr__(self):
         return "_Material(%r,%r,%r,%r)" % (self.ambient, self.diffuse, self.specular, self.emission)
 
@@ -109,7 +107,6 @@ class ObjModel(Model):
                 if lineparts[0] == "newmtl":
                     # Save existing mat if one was defined already
                     if matname:
-                        print "saved mat", matname
                         self.mats[matname] = _Material(*mat)
 
                     # Start a new material
@@ -129,7 +126,6 @@ class ObjModel(Model):
                     mat[m[line[1]]] = color
             # Save the final one
             if matname:
-                print "saved mat", matname
                 self.mats[matname] = _Material(*mat)
         finally:
             f.close()

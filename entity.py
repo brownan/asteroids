@@ -7,7 +7,7 @@ import numpy
 import math
 
 import model
-from asteroids import WIDTH, HEIGHT
+import asteroids
 
 class Entity(object):
     """An entity is anything that can be drawn on the screen at a particular
@@ -90,15 +90,15 @@ class FloatingEntity(Entity):
         self.pos += self.vel
         self.rotangle += self.dtheta
 
-        if self.pos[0] > WIDTH + self.WRAPDIST:
+        if self.pos[0] > asteroids.WIDTH + self.WRAPDIST:
             self.pos[0] = -self.WRAPDIST
         elif self.pos[0] < -self.WRAPDIST:
-            self.pos[0] = WIDTH + self.WRAPDIST
+            self.pos[0] = asteroids.WIDTH + self.WRAPDIST
 
-        if self.pos[1] > HEIGHT + self.WRAPDIST:
+        if self.pos[1] > asteroids.HEIGHT + self.WRAPDIST:
             self.pos[1] = -self.WRAPDIST
         elif self.pos[1] < -self.WRAPDIST:
-            self.pos[1] = HEIGHT + self.WRAPDIST
+            self.pos[1] = asteroids.HEIGHT + self.WRAPDIST
 
 class Asteroid(FloatingEntity):
     """Represents an asteroid on the field"""
@@ -115,8 +115,8 @@ class Asteroid(FloatingEntity):
 
         """
         # Generate a random starting pos
-        initialpos = [random.uniform(0,WIDTH),
-                random.uniform(0,HEIGHT), 0]
+        initialpos = [random.uniform(0,asteroids.WIDTH),
+                random.uniform(0,asteroids.HEIGHT), 0]
 
         # generate a random velocity
         vel = [random.uniform(-maxvel, maxvel) for _ in xrange(2)]
