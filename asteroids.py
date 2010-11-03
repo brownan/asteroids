@@ -148,7 +148,6 @@ def main():
     # Set up model transformations
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    print distance
     gluLookAt(
             # Eye coordinates:
             WIDTH/2.0, HEIGHT/2.0, distance+10,
@@ -163,7 +162,7 @@ def main():
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambience)
     glLightfv(GL_LIGHT0, GL_POSITION, (1,1,2,0))
     glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1,0.1,0.1,1))
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, (.8,.8,.8,1))
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (.4,.4,.4,1))
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
 

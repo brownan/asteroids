@@ -23,11 +23,16 @@ class _Material(object):
         self.specular = specular
         self.emission = emission
 
+        print repr(self)
+
+    def __repr__(self):
+        return "_Material(%r,%r,%r,%r)" % (self.ambient, self.diffuse, self.specular, self.emission)
+
     def activate(self):
         glMaterialfv(GL_FRONT, GL_AMBIENT, self.ambient)
         glMaterialfv(GL_FRONT, GL_DIFFUSE, self.diffuse)
-        glMaterialfv(GL_FRONT, GL_SPECULAR, self.specular)
-        glMaterialfv(GL_FRONT, GL_EMISSION, self.emission)
+        #glMaterialfv(GL_FRONT, GL_SPECULAR, self.specular)
+        #glMaterialfv(GL_FRONT, GL_EMISSION, self.emission)
 
 class ObjModel(Model):
     """A model loaded from an obj file"""
