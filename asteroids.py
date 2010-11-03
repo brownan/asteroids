@@ -9,8 +9,8 @@ import model, entity
 import math
 import numpy
 
-WIDTH = 80
-HEIGHT = 60
+WIDTH = 800
+HEIGHT = 600
 
 c = [
         [1, 0, 0],
@@ -33,7 +33,7 @@ def draw_string(x, y, z, txt):
 
 
 fov = 45
-distance = HEIGHT/2.0 / math.tan(fov/2.0*math.pi/180.0)
+distance = HEIGHT/2 / math.tan(fov/2*math.pi/180)
 
 class Game(object):
     def __init__(self):
@@ -48,10 +48,10 @@ class Game(object):
                 entity.Entity(
                     
                     model.ObjModel("ship.obj"),
-                    (WIDTH/2,HEIGHT/2,0),
+                    (WIDTH/2,HEIGHT/2-100,0),
                     (0,0,0),
                     0.0,
-                    1,
+                    10,
                     )
                 )
 
@@ -108,19 +108,20 @@ class Game(object):
         for e in self.e:
             e.update()
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        t = self.t
-        gluLookAt(
-                # Eye coordinates:
-                math.sin(t)*WIDTH+WIDTH/2, HEIGHT/2.0, math.cos(t)*(distance+10),
-                # Reference point coordinates
-                WIDTH/2.0,HEIGHT/2.0,0,
-                # direction of "up"
-                0, 1, 0
-                )
-        glLightfv(GL_LIGHT0, GL_POSITION, (-1,0,0,0))
-        self.t += 0.03
+        if 0:
+            glMatrixMode(GL_MODELVIEW)
+            glLoadIdentity()
+            t = self.t
+            gluLookAt(
+                    # Eye coordinates:
+                    math.sin(t)*WIDTH+WIDTH/2, HEIGHT/2.0, math.cos(t)*(distance+10),
+                    # Reference point coordinates
+                    WIDTH/2.0,HEIGHT/2.0,0,
+                    # direction of "up"
+                    0, 1, 0
+                    )
+            glLightfv(GL_LIGHT0, GL_POSITION, (-1,0,0,0))
+            self.t += 0.03
         # Cause a re-display
         glutPostRedisplay()
 
@@ -142,11 +143,12 @@ def main():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    gluPerspective(fov, WIDTH*1.0/HEIGHT, 0.001, 100000000)
+    gluPerspective(fov, WIDTH*1.0/HEIGHT, distance-100, distance+100)
 
     # Set up model transformations
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+    print distance
     gluLookAt(
             # Eye coordinates:
             WIDTH/2.0, HEIGHT/2.0, distance+10,
@@ -159,7 +161,7 @@ def main():
     # Lighting
     ambience = [0, 0, 0, 0]
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambience)
-    glLightfv(GL_LIGHT0, GL_POSITION, (-1,-1,0,0))
+    glLightfv(GL_LIGHT0, GL_POSITION, (1,1,2,0))
     glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1,0.1,0.1,1))
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (.8,.8,.8,1))
     glEnable(GL_LIGHTING)
@@ -167,7 +169,6 @@ def main():
 
     # Interpolate shadows with GL_SMOOTH or render each face a single color
     # with GL_FLAT
-    glShadeModel(GL_FLAT)
     glShadeModel(GL_SMOOTH)
 
     # Setup Background color
