@@ -9,8 +9,31 @@ import model, entity
 import math
 import numpy
 
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 80
+HEIGHT = 60
+
+c = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        [1, 1, 1],
+    ]
+txt = ["+X", "+Y", "+Z"]
+
+v = [
+        [.5*WIDTH, 0, 0],
+        [0, .5*HEIGHT, 0],
+        [0, 0, 10],
+        [0, 0, 0],
+    ]
+def draw_string(x, y, z, txt):
+    glRasterPos3f(x, y, z)
+    for c in txt:
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(c))
+
+
+fov = 45
+distance = HEIGHT/2.0 / math.tan(fov/2.0*math.pi/180.0)
 
 class Game(object):
     def __init__(self):
@@ -28,14 +51,16 @@ class Game(object):
                     (WIDTH/2,HEIGHT/2,0),
                     (0,0,0),
                     0.0,
-                    10,
+                    1,
                     )
                 )
 
-        self.e.append( entity.Asteroid(4,5))
-        self.e.append( entity.Asteroid(3,5))
-        self.e.append( entity.Asteroid(2,5))
-        self.e.append( entity.Asteroid(1,5))
+        self.e.append( entity.Asteroid(4,.5))
+        self.e.append( entity.Asteroid(3,.5))
+        self.e.append( entity.Asteroid(2,.5))
+        self.e.append( entity.Asteroid(1,.5))
+
+        self.t = 0
 
     def draw(self):
 
@@ -52,6 +77,17 @@ class Game(object):
         glVertex2i(0,HEIGHT)
         glVertex2i(0,0)
         glEnd()
+        for i in range(3):
+            glBegin(GL_LINES)
+            glColor3fv(c[i])
+            glVertex3fv(v[i])
+            glColor3fv(c[3])
+            glVertex3fv(v[3])
+            glEnd()
+        glColor3f(1, 1, 1)
+        draw_string( v[ 0 ][ 0 ], v[ 0 ][ 1 ], v[ 0 ][ 2 ], txt[ 0 ] )
+        draw_string( v[ 1 ][ 0 ], v[ 1 ][ 1 ], v[ 1 ][ 2 ], txt[ 1 ] )
+        draw_string( v[ 2 ][ 0 ], v[ 2 ][ 1 ], v[ 2 ][ 2 ], txt[ 2 ] )
         glEnable(GL_LIGHTING)
 
         # Draw things
@@ -72,6 +108,19 @@ class Game(object):
         for e in self.e:
             e.update()
 
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        t = self.t
+        gluLookAt(
+                # Eye coordinates:
+                math.sin(t)*WIDTH+WIDTH/2, HEIGHT/2.0, math.cos(t)*(distance+10),
+                # Reference point coordinates
+                WIDTH/2.0,HEIGHT/2.0,0,
+                # direction of "up"
+                0, 1, 0
+                )
+        glLightfv(GL_LIGHT0, GL_POSITION, (-1,0,0,0))
+        self.t += 0.03
         # Cause a re-display
         glutPostRedisplay()
 
@@ -81,7 +130,7 @@ def main():
     # Init window
     glutInit()
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(WIDTH, HEIGHT)
+    glutInitWindowSize(800, 600)
     glutCreateWindow("Asteroids")
 
     # Setup callbacks
@@ -92,9 +141,6 @@ def main():
     # Set up a perspective projection
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-
-    fov = 45
-    distance = HEIGHT/2.0 / math.tan(fov/2.0*math.pi/180.0)
 
     gluPerspective(fov, WIDTH*1.0/HEIGHT, 0.001, 100000000)
 
@@ -110,23 +156,29 @@ def main():
             0, 1, 0
             )
 
+    # Lighting
+    ambience = [0, 0, 0, 0]
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambience)
+    glLightfv(GL_LIGHT0, GL_POSITION, (-1,-1,0,0))
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1,0.1,0.1,1))
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (.8,.8,.8,1))
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+
     # Interpolate shadows with GL_SMOOTH or render each face a single color
     # with GL_FLAT
+    glShadeModel(GL_FLAT)
     glShadeModel(GL_SMOOTH)
 
     # Setup Background color
     glClearDepth(1.0)
     glClearColor(0, 0, 0, 0)
+
+    # For proper z-depth testing
     glEnable(GL_DEPTH_TEST)
 
-    # Lighting
-    #ambience = [1, 1, 1, 0]
-    #glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambience)
-    glLightfv(GL_LIGHT0, GL_POSITION, (1,1,-2,0))
-    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1,0.1,0.1,1))
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.0,1.0,1.0,1))
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
+    # For proper lighting calculation on scaled objects
+    glEnable(GL_RESCALE_NORMAL)
 
     glutMainLoop()
 

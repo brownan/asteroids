@@ -1,3 +1,5 @@
+from __future__ import division
+
 from OpenGL.GL import *
 
 import random
@@ -120,7 +122,7 @@ class Asteroid(FloatingEntity):
         vel = [random.uniform(-maxvel, maxvel) for _ in xrange(2)]
         vel.append(0)
 
-        scale = size**2 + size * 5
+        scale = (size**2 + size * 5) / 10.0
 
         self.WRAPDIST = scale*2
 
