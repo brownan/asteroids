@@ -49,10 +49,11 @@ class ObjModel(Model):
         # Stores all the ploygons for this model
         # Keys are material names
         # Each value is a polygon list
-        # Each polygon list item is a list of (vertex, normal), where normal
+        # Each polygon list item is a tuple: (triangles, quadralaterals, polygons).
+        # Each of those is a list of (vertex, normal), where normal
         # and vertex are numpy vectors. Together, the list of points define a
         # single polygon
-        self.polys = defaultdict(list)
+        self.polys = defaultdict(lambda: ([],[],[]))
         currentmat = None
 
         for line in fileobj:
@@ -91,7 +92,13 @@ class ObjModel(Model):
 
                 # Now that all points have been parsed and mapped for this
                 # polygon, put it in the polygon list for the current material
-                self.polys[currentmat].append(points)
+                if len(points) == 3:
+                    i = 0
+                elif len(points) == 4:
+                    i = 1
+                else:
+                    i = 2
+                self.polys[currentmat][i].append(points)
 
     def _parsemat(self, matfilename):
         f = open(matfilename, 'r')
@@ -135,7 +142,32 @@ class ObjModel(Model):
         for texture, polygons in self.polys.iteritems():
             if texture:
                 texture.activate()
-            for p in polygons:
+            triangles, quads, polys = polygons
+            if triangles:
+                glBegin(GL_TRIANGLES)
+                for (pt1,n1),(pt2,n2),(pt3,n3) in triangles:
+                    glNormal3dv(n1)
+                    glVertex3dv(pt1)
+                    glNormal3dv(n2)
+                    glVertex3dv(pt2)
+                    glNormal3dv(n3)
+                    glVertex3dv(pt3)
+                glEnd()
+
+            if quads:
+                glBegin(GL_QUADS)
+                for (pt1,n1),(pt2,n2),(pt3,n3),(pt4,n4) in quads:
+                    glNormal3dv(n1)
+                    glVertex3dv(pt1)
+                    glNormal3dv(n2)
+                    glVertex3dv(pt2)
+                    glNormal3dv(n3)
+                    glVertex3dv(pt3)
+                    glNormal3dv(n4)
+                    glVertex3dv(pt4)
+                glEnd()
+
+            for p in polys:
                 glBegin(GL_POLYGON)
                 for pt, n in p:
                     glNormal3dv(n)
