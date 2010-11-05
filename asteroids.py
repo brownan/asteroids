@@ -47,14 +47,7 @@ class Game(object):
 
         # Initialize entities
         self.e.append(
-                entity.Entity(
-                    
-                    model.ObjModel("ship.obj"),
-                    (WIDTH/2,HEIGHT/2-100,0),
-                    (0,0,0),
-                    0.0,
-                    10,
-                    )
+                entity.Ship()
                 )
 
         self.e.append( entity.Asteroid(4,5))
@@ -145,7 +138,8 @@ def main():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    gluPerspective(fov, WIDTH*1.0/HEIGHT, distance-100, distance+100)
+    #gluPerspective(fov, WIDTH*1.0/HEIGHT, distance-100, distance+100)
+    gluPerspective(fov, WIDTH*1.0/HEIGHT, 10, distance+100)
 
     # Set up model transformations
     glMatrixMode(GL_MODELVIEW)
@@ -163,8 +157,8 @@ def main():
     ambience = [0, 0, 0, 0]
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambience)
     glLightfv(GL_LIGHT0, GL_POSITION, (1,1,2,0))
-    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1,0.1,0.1,1))
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, (.4,.4,.4,1))
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2,0.2,0.2,1))
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (.6,.6,.6,1))
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
 

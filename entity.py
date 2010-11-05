@@ -60,6 +60,62 @@ class Entity(object):
     def update(self):
         pass # Override this
 
+class Ship(Entity):
+    """Represents a player ship.
+    
+    """
+
+    modelfile = "ship.obj"
+
+    def __init__(self, playernum=0):
+        # Don't call super method, we do our own initialization
+        self.model = model.ObjModel(self.modelfile)
+        self.pos = numpy.array((asteroids.WIDTH/2, asteroids.HEIGHT/2, 0))
+        self.scale = 10
+        
+        if playernum != 0:
+            # Change the body color of the ship
+            pass # TODO
+
+        # States:
+        # 0 - ship under control, weapons disabled
+        # 1 - ship under normal control for in game
+        # 2 - flying in
+        self._state = 0
+
+        # Instead of defining a rotation axis and angle for this entity, store
+        # the ship's direction configuration as: a unit vector for the
+        # direction it's pointing, and a rotation angle about its axis.
+        self.direction = numpy.array((0,1,0))
+        self.rotangle = 0
+
+    def draw(self):
+        """Our own draw method, for alternate rotation"""
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glTranslated(*self.pos)
+        glScaled(self.scale, self.scale, self.scale)
+
+        # Do the rotations. The ship normally faces (0,1,0), so if
+        # self.direction is that, no rotation is done
+        # Common case: on the x/y plane
+        if self.direction[2] == 0:
+            sintheta = self.direction[0]
+            costheta = self.direction[1]
+            glRotated(math.acos(costheta), 0, 0, 1)
+
+        self.model.draw()
+        glPopMatrix()
+
+    def fly_in(self):
+        """Initiates a fly-in"""
+        # Set the ship just behind the camera
+        self.pos[0] = asteroids.HEIGHT/2
+        self.pos[1] = asteroids.WIDTH/2 + asteroids.WIDTH/10
+        self.pos[2] = asteroids.distance * 1.1
+        # Aim it towards the field
+
+
 class FloatingEntity(Entity):
     """Given an initial velocity and rotational velocity, updates by those
     constants each frame. Good for asteroids and debris
