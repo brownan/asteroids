@@ -8,6 +8,7 @@ import math
 
 import model
 import asteroids
+import bezier
 
 class Entity(object):
     """An entity is anything that can be drawn on the screen at a particular
@@ -39,9 +40,6 @@ class Entity(object):
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
 
-        # Set material with glMaterial
-        # TODO
-
         # Do translations
         glTranslated(*self.pos)
 
@@ -71,7 +69,7 @@ class Ship(Entity):
         # Don't call super method, we do our own initialization
         self.model = model.ObjModel(self.modelfile)
         self.pos = numpy.array((asteroids.WIDTH/2, asteroids.HEIGHT/2, 0))
-        self.scale = 10
+        self.scale = 20
         
         if playernum != 0:
             # Change the body color of the ship
@@ -83,11 +81,35 @@ class Ship(Entity):
         # 2 - flying in
         self._state = 0
 
-        # Instead of defining a rotation axis and angle for this entity, store
-        # the ship's direction configuration as: a unit vector for the
-        # direction it's pointing, and a rotation angle about its axis.
-        self.direction = numpy.array((0,1,0))
-        self.rotangle = 0
+        # Store the ship's orientation as three angles:
+        # theta is the rotation about the Z axis. When phi is 0, this is the
+        # angle the ship is pointing on the X/Y plane. 0 is straight up, and
+        # increasing angles turn the ship clockwise.
+        self.theta = 90
+
+        # phi is the counterclockwise rotation about the X axis (out of the
+        # page) Together with theta they describe the ship's direction
+        self.phi = -90
+
+        # rot is the rotation about the ship's axis (Y). When phi is 90, this
+        # variable is equivilant to theta
+        self.rot = 0
+
+        self.fly_in()
+
+    def update(self):
+        p = lambda: None
+        return [p, p, self._update_fly_in][self._state]()
+
+    def _update_fly_in(self):
+        self._t += 1
+        self.rot += 1
+        current = self._bezier.B(self._t)
+        self.pos = current[:3]
+        self.theta = current[3]
+        self.phi = current[4]
+        if self._t >= self._bezier.tmax:
+            self._state = 1
 
     def draw(self):
         """Our own draw method, for alternate rotation"""
@@ -96,24 +118,58 @@ class Ship(Entity):
         glTranslated(*self.pos)
         glScaled(self.scale, self.scale, self.scale)
 
-        # Do the rotations. The ship normally faces (0,1,0), so if
-        # self.direction is that, no rotation is done
-        # Common case: on the x/y plane
-        if self.direction[2] == 0:
-            sintheta = self.direction[0]
-            costheta = self.direction[1]
-            glRotated(math.acos(costheta), 0, 0, 1)
+        # Do the rotations. The ship normally faces (0,1,0) into the page
+        # normal turn
+        glRotated(self.theta, 0,0,1)
+
+        phi = self.phi
+        if phi:
+            glRotated(phi, 1,0,0)
+
+        # ship's axis rotation. Do this last, so it's always along the ship's
+        # axis, not the world's Y axis
+        glRotated(self.rot, 0,1,0)
 
         self.model.draw()
         glPopMatrix()
 
     def fly_in(self):
         """Initiates a fly-in"""
-        # Set the ship just behind the camera
-        self.pos[0] = asteroids.HEIGHT/2
-        self.pos[1] = asteroids.WIDTH/2 + asteroids.WIDTH/10
-        self.pos[2] = asteroids.distance * 1.1
-        # Aim it towards the field
+        self._state = 2
+
+        # Set up a quadratic bezier curve with p0 just behind the camera, p1 at
+        # some point near the x/y plane, and p2 at our destination: the center
+        # of the screen on the x/y plane
+
+        # first 3 are position, second two are theta and phi
+        p0 = numpy.array([
+                          asteroids.WIDTH*0.6,
+                          asteroids.HEIGHT/2,
+                          asteroids.distance * 1.1,
+                          90.0,
+                          -90.0], dtype=float)
+        p1 = numpy.array([
+                          asteroids.WIDTH*0.6,
+                          asteroids.HEIGHT/2,
+                          asteroids.distance * 0.3,
+                          90.0,
+                          -80.0], dtype=float)
+        p2 = numpy.array([
+                          asteroids.WIDTH/2,
+                          asteroids.HEIGHT/2,
+                          0,
+                          90,
+                          0], dtype=float)
+
+        # Set the ship at p0
+        self.pos[:] = p0[:3]
+        self.theta = p0[3]
+        self.phi = p0[4]
+
+        self._t = 0
+
+        # Specify the number of frames to take as the 4th parameter
+        self._bezier = bezier.Quadratic(p0,p1,p2,200)
 
 
 class FloatingEntity(Entity):

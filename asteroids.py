@@ -121,13 +121,13 @@ class Game(object):
         glutPostRedisplay()
 
 def main():
-    g = Game()
-
     # Init window
     glutInit()
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
     glutInitWindowSize(800, 600)
     glutCreateWindow("Asteroids")
+
+    g = Game()
 
     # Setup callbacks
     glutDisplayFunc(g.draw)

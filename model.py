@@ -6,10 +6,27 @@ from collections import defaultdict
 
 class Model(object):
     """A model that can be drawn on the screen"""
-    def draw(self):
-        """The draw method should call glBegin, some number of draw
-        functions, and glEnd"""
+
+    def _create_displaylist(self):
+        """Create the display list.
+        Sub-classes *should* call this sometime during the initialization
+        """
+        self.renderlist = glGenLists(1)
+        if self.renderlist == 0:
+            raise RuntimeError("Could not acquire a display list")
+        glNewList(self.renderlist, GL_COMPILE)
+        self.render()
+        glEndList()
+
+    def render(self):
+        """Override this method. This code renders the object and stores it in
+        a display list.
+        It should call glBegin, have some drawing methods, and then call glEnd
+        """
         raise NotImplementedError()
+    
+    def draw(self):
+        glCallList(self.renderlist)
 
 class _Material(object):
     """Defines a particular material"""
@@ -35,6 +52,10 @@ class _Material(object):
 class ObjModel(Model):
     """A model loaded from an obj file"""
     def __init__(self, fileobj):
+        self._parse_model(fileobj)
+        self._create_displaylist()
+
+    def _parse_model(self, fileobj):
         if isinstance(fileobj, (str, unicode)):
             fileobj = open(fileobj, 'r')
 
@@ -137,7 +158,7 @@ class ObjModel(Model):
         finally:
             f.close()
 
-    def draw(self):
+    def render(self):
         # Draw polygons
         for texture, polygons in self.polys.iteritems():
             if texture:
@@ -179,8 +200,10 @@ class AsteroidModel(ObjModel):
     def __init__(self):
         """Generate a randomized asteroid. Starts with a base asteroid.obj, and
         randomly adjusts the magnitudes of all vertices"""
-        super(AsteroidModel, self).__init__("asteroid.obj")
+        super(AsteroidModel, self)._parse_model("asteroid.obj")
 
         for vertex in self.vertices[1:]:
             vertex *= random.uniform(0.7,1.3)
+
+        super(AsteroidModel, self)._create_displaylist()
 
