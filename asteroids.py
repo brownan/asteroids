@@ -50,10 +50,10 @@ class Game(object):
                 entity.Ship()
                 )
 
-        self.e.append( entity.Asteroid(4,5))
-        self.e.append( entity.Asteroid(3,5))
-        self.e.append( entity.Asteroid(2,5))
-        self.e.append( entity.Asteroid(1,5))
+        self.e.append( entity.Asteroid(4,1))
+        self.e.append( entity.Asteroid(3,1))
+        self.e.append( entity.Asteroid(2,1))
+        self.e.append( entity.Asteroid(1,1))
 
         self.t = 0
         self.frameno = 0

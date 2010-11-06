@@ -103,7 +103,7 @@ class Ship(Entity):
 
     def _update_fly_in(self):
         self._t += 1
-        self.rot += 1
+        self.rot += 2
         current = self._bezier.B(self._t)
         self.pos = current[:3]
         self.theta = current[3]
