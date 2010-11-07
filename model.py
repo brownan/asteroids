@@ -1,4 +1,5 @@
 from OpenGL.GL import *
+from OpenGL.GLUT import glutSolidSphere
 
 import random
 import numpy
@@ -6,6 +7,9 @@ from collections import defaultdict
 
 class Model(object):
     """A model that can be drawn on the screen"""
+
+    def __init__(self):
+        self._create_displaylist()
 
     def _create_displaylist(self):
         """Create the display list.
@@ -27,6 +31,11 @@ class Model(object):
     
     def draw(self):
         glCallList(self.renderlist)
+
+class Sphere(Model):
+    def render(self):
+        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (1,0,0,0))
+        glutSolidSphere(5, 5, 5)
 
 class _Material(object):
     """Defines a particular material"""

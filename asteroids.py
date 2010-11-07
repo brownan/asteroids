@@ -4,16 +4,21 @@ from OpenGL.GLUT import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-import model, entity
-
 import math
 import numpy
 
-import profilerun
-
+# Define these constants above the imports, some modules use them
 WIDTH = 800
 HEIGHT = 600
+fov = 45
 
+distance = HEIGHT/2 / math.tan(fov/2*math.pi/180)
+
+import model
+import entity
+import ship
+
+# Constants to draw axis lines
 c = [
         [1, 0, 0],
         [0, 1, 0],
@@ -21,21 +26,19 @@ c = [
         [1, 1, 1],
     ]
 txt = ["+X", "+Y", "+Z"]
-
 v = [
         [.5*WIDTH, 0, 0],
         [0, .5*HEIGHT, 0],
         [0, 0, 10],
         [0, 0, 0],
     ]
+
 def draw_string(x, y, z, txt):
     glRasterPos3f(x, y, z)
     for c in txt:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(c))
 
 
-fov = 45
-distance = HEIGHT/2 / math.tan(fov/2*math.pi/180)
 
 class Game(object):
     def __init__(self):
@@ -46,10 +49,11 @@ class Game(object):
         self.e = []
 
         # Initialize entities
-        self.e.append(
-                entity.Ship()
+        self.p.append(
+                ship.Ship()
                 )
 
+        self.e.extend(self.p)
         self.e.append( entity.Asteroid(4,1))
         self.e.append( entity.Asteroid(3,1))
         self.e.append( entity.Asteroid(2,1))
@@ -120,6 +124,26 @@ class Game(object):
         # Cause a re-display
         glutPostRedisplay()
 
+    def keypress(self, key, x, y):
+        """An ascii key was pressed"""
+        try:
+            {       GLUT_KEY_UP: lambda: self.p[0].thrust(1),
+                    GLUT_KEY_LEFT: lambda: self.p[0].turn(1),
+                    GLUT_KEY_RIGHT: lambda: self.p[0].turn(-1),
+                    ' ': lambda: self.p[0].bullets.fire(),
+            }[key]()
+        except KeyError:
+            pass
+
+    def keyup(self, key, x, y):
+        try:
+            {       GLUT_KEY_UP: lambda: self.p[0].thrust(0),
+                    GLUT_KEY_LEFT: lambda: self.p[0].turn(0),
+                    GLUT_KEY_RIGHT: lambda: self.p[0].turn(0),
+            }[key]()
+        except KeyError:
+            pass
+
 def main():
     # Init window
     glutInit()
@@ -132,13 +156,16 @@ def main():
     # Setup callbacks
     glutDisplayFunc(g.draw)
     glutTimerFunc(0, g.update, 0)
+    glutKeyboardFunc(g.keypress)
+    glutKeyboardUpFunc(g.keyup)
+    glutSpecialFunc(g.keypress)
+    glutSpecialUpFunc(g.keyup)
     # TODO: glutReshapeFunc
 
     # Set up a perspective projection
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    #gluPerspective(fov, WIDTH*1.0/HEIGHT, distance-100, distance+100)
     gluPerspective(fov, WIDTH*1.0/HEIGHT, 10, distance+100)
 
     # Set up model transformations
