@@ -8,6 +8,10 @@ import math
 
 import model
 
+def check_collide(ent1, ent2):
+    dist = numpy.linalg.norm(ent1.pos - ent2.pos)
+    return dist < ent1.radius + ent2.radius
+
 class Entity(object):
     """An entity is anything that can be drawn on the screen at a particular
     position and orientation.
@@ -16,7 +20,7 @@ class Entity(object):
     which is called each frame.
 
     """
-    def __init__(self, model, initpos, rotaxis, rotangle, scale=1):
+    def __init__(self, model, initpos, rotaxis, rotangle, radius, scale=1):
         """Specify a model, initial position, and initial rotation.
         initpos is a triplet of coordinates to be passed into glTranslate
         rotaxis is a vector specifying the axis of rotation about the origin
@@ -31,6 +35,7 @@ class Entity(object):
         self.rotaxis = numpy.array(rotaxis, dtype=float)
         self.rotangle = float(rotangle)
         self.scale = float(scale)
+        self.radius = radius
 
     def draw(self):
         """Draws the model on the screen. You probably don't need to override
@@ -65,7 +70,7 @@ class FloatingEntity(Entity):
     constants each frame. Good for asteroids and debris
     """
     WRAPDIST = 30
-    def __init__(self, model, initpos, vel, scale=1):
+    def __init__(self, model, initpos, vel, radius, scale=1):
         """Create a new floating entity with the given model at the given
         initial position. It will have a the given velocity vel, in world units
         per frame.
@@ -84,7 +89,7 @@ class FloatingEntity(Entity):
 
         self.vel = numpy.array(vel, dtype=float)
 
-        super(FloatingEntity, self).__init__(model, initpos, rotaxis, 0, scale)
+        super(FloatingEntity, self).__init__(model, initpos, rotaxis, 0, radius, scale)
 
     def update(self):
         self.pos += self.vel
@@ -104,7 +109,7 @@ class Asteroid(FloatingEntity):
     """Represents an asteroid on the field"""
     asteroidmodelclass = model.AsteroidModel
 
-    def __init__(self, size, maxvel):
+    def __init__(self, size, maxvel, initialpos=None):
         """Creates an asteroid randomly on the field with the specified size
         and maximum velocity
 
@@ -115,19 +120,26 @@ class Asteroid(FloatingEntity):
 
         """
         # Generate a random starting pos
-        initialpos = [random.uniform(0,WIDTH),
-                random.uniform(0,HEIGHT), 0]
+        if initialpos is None:
+            initialpos = [random.uniform(0,WIDTH),
+                    random.uniform(0,HEIGHT), 0]
 
         # generate a random velocity
         vel = [random.uniform(-maxvel, maxvel) for _ in xrange(2)]
         vel.append(0)
+
+        self.size = size
+        self.maxvel = maxvel
 
         scale = (size**2 + size * 5)# / 10.0
 
         self.WRAPDIST = scale*2
 
         super(Asteroid, self).__init__(self.asteroidmodelclass(), initialpos, vel,
-                scale)
+                1.5*scale, scale)
 
     def split(self):
         """Returns two new asteroids with the same momentum as this one."""
+        if self.size == 1:
+            return ()
+        return (Asteroid(self.size-1, self.maxvel*1.5, self.pos) for _ in xrange(2))

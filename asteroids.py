@@ -45,19 +45,18 @@ class Game(object):
         # Players
         self.p = []
 
-        # Master list of entities
-        self.e = []
+        # list of all asteroids
+        self.asteroids = set()
 
         # Initialize entities
         self.p.append(
                 ship.Ship()
                 )
 
-        self.e.extend(self.p)
-        self.e.append( entity.Asteroid(4,1))
-        self.e.append( entity.Asteroid(3,1))
-        self.e.append( entity.Asteroid(2,1))
-        self.e.append( entity.Asteroid(1,1))
+        self.asteroids.add( entity.Asteroid(4,1))
+        self.asteroids.add( entity.Asteroid(3,1))
+        self.asteroids.add( entity.Asteroid(2,1))
+        self.asteroids.add( entity.Asteroid(1,1))
 
         self.t = 0
         self.frameno = 0
@@ -91,10 +90,13 @@ class Game(object):
 
         # Draw things
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [0.8,0.8,0.8]);
-        for e in self.e:
-            e.draw()
+        for a in self.asteroids:
+            a.draw()
 
-        # ??
+        for p in self.p:
+            p.draw()
+
+        # flush the command pipeline and swap the buffers to display this frame
         glFlush()
         glutSwapBuffers()
 
@@ -104,23 +106,14 @@ class Game(object):
         glutTimerFunc(20, self.update, 0)
 
         # Change things here
-        for e in self.e:
-            e.update()
+        for a in self.asteroids:
+            a.update()
 
-        if 0:
-            glMatrixMode(GL_MODELVIEW)
-            glLoadIdentity()
-            t = self.t
-            gluLookAt(
-                    # Eye coordinates:
-                    math.sin(t)*WIDTH+WIDTH/2, HEIGHT/2.0, math.cos(t)*(distance+10),
-                    # Reference point coordinates
-                    WIDTH/2.0,HEIGHT/2.0,0,
-                    # direction of "up"
-                    0, 1, 0
-                    )
-            glLightfv(GL_LIGHT0, GL_POSITION, (-1,0,0,0))
-            self.t += 0.03
+        for player in self.p:
+            player.update()
+
+        self.collision()
+
         # Cause a re-display
         glutPostRedisplay()
 
@@ -131,7 +124,6 @@ class Game(object):
                     GLUT_KEY_LEFT: lambda: self.p[0].turn(1),
                     GLUT_KEY_RIGHT: lambda: self.p[0].turn(-1),
                     ' ': lambda: self.p[0].bullets.fire(),
-                    'f': lambda: self.p[0].fly_out(),
             }[key]()
         except KeyError:
             pass
@@ -144,6 +136,48 @@ class Game(object):
             }[key]()
         except KeyError:
             pass
+
+    def collision(self):
+        """Collision detection routine. Checks:
+        1) collisions between the ship and each asteroid
+        2) The ship's bullets and each asteroid
+        3) The enemy's bullets and the ship
+
+        """
+        # List of asteroid objects to add or remove at the end of this frame
+        # (so as not to mutate the asteroid set while we're iterating over it)
+        toremove = set()
+        toadd = set()
+
+        # Check the ship's bullet against each asteroid
+        for ship in self.p:
+            for bullet in ship.bullets.bullets:
+                for asteroid in self.asteroids:
+                    if entity.check_collide(bullet, asteroid):
+                        # Collide the bullet with the asteroid
+                        bullet.t = 999
+                        newasteroids = asteroid.split()
+                        toadd.update(newasteroids)
+                        toremove.add(asteroid)
+
+
+        # Check the ship against each asteroid
+        for ship in self.p:
+            if not ship.is_active():
+                continue
+            for asteroid in self.asteroids:
+                distance = numpy.linalg.norm(ship.pos - asteroid.pos)
+                if distance < ship.radius + asteroid.radius:
+                    # Collide the ship
+                    newasteroids = asteroid.split()
+                    toadd.update(newasteroids)
+                    toremove.add(asteroid)
+                    ship.damage(0)
+                    if not ship.is_active():
+                        break # go to next ship in ship list
+
+        self.asteroids -= toremove
+        self.asteroids |= toadd
 
 def main():
     # Init window

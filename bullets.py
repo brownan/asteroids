@@ -19,7 +19,7 @@ class Bullets(object):
         self.maxbullets = 3
         self.maxtime = 50
         self.speed = 5
-        self.rate = 10 # in frames
+        self.rate = 5 # in frames
 
         self._cooldown = 0
 
@@ -66,13 +66,13 @@ class Bullets(object):
             b.draw()
 
 class BulletEnt(entity.Entity):
-    WRAPDIST = 20
+    WRAPDIST = 25
 
     def __init__(self, pos, vel):
         super(BulletEnt, self).__init__(
                 model.Sphere(),
                 pos,
-                (0,0,0), 0, 1)
+                (0,0,0), 0, 1, 1)
         self.velocity = vel
         self.speed = numpy.linalg.norm(vel)
 

@@ -18,7 +18,7 @@ class Ship(entity.Entity):
     """Represents a player ship.
     
     """
-    WRAPDIST = 20
+    WRAPDIST = 25
     modelfile = "ship.obj"
 
     def __init__(self, playernum=0):
@@ -26,16 +26,18 @@ class Ship(entity.Entity):
         self.model = model.ObjModel(self.modelfile)
         self.pos = numpy.array((WIDTH/2, HEIGHT/2, 0),dtype=float)
         self.scale = 15
+        self.radius = 2*self.scale
         
         if playernum != 0:
             # Change the body color of the ship
             pass # TODO
 
         # States:
-        # 0 - ship under control, weapons disabled
+        # 0 - control disabled, nothing happening
         # 1 - ship under normal control for in game
         # 2 - flying in
         # 3 - flying out
+        # 4 - Blown up
         self._state = 0
 
         # Store the ship's orientation as three angles:
@@ -60,6 +62,9 @@ class Ship(entity.Entity):
 
         # The player's bullets
         self.bullets = bullets.Bullets(self)
+
+        self.shieldmax = 5
+        self.shields = self.shieldmax
 
         self._trusting = 0
         self._turning = 0
@@ -92,9 +97,9 @@ class Ship(entity.Entity):
     def update(self):
         # Choose the appropriate update function based on the current state
         p = lambda: None
-        [self._update_normal, self._update_normal, # 0 and 1
+        [p, self._update_normal, # 0 and 1
                 self._update_bezier, self._update_bezier, # 2 and 3
-                ][self._state]()
+                p][self._state]()
 
         # Thrusting?
         if self._trusting:
@@ -129,22 +134,32 @@ class Ship(entity.Entity):
         self.theta = current[3]
         self.phi = current[4]
         if self._t >= self._bezier.tmax:
-            self._state = 1
+            if self._state == 2:
+                self._state = 1
+            else:
+                self._state = 0
 
     def thrust(self, on):
         """Turns thrust on or off"""
-        if self._state not in (0, 1):
+        if self._state != 1:
             return
         self._trusting = on
 
     def turn(self, dir):
         """Turns left or right"""
-        if self._state not in (0, 1):
+        if self._state != 1:
             return
         self._turning = dir
 
     def draw(self):
         """Our own draw method, for alternate rotation"""
+        # Draw our bullets
+        self.bullets.draw()
+
+        if self._state == 4:
+            # TODO: draw explosion
+            return
+
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
 
@@ -166,9 +181,6 @@ class Ship(entity.Entity):
 
         self.model.draw()
         glPopMatrix()
-
-        # Draw our bullets
-        self.bullets.draw()
 
     def fly_in(self):
         """Initiates a fly-in"""
@@ -236,3 +248,21 @@ class Ship(entity.Entity):
         self._t = 0
 
         self._bezier = bezier.Quadratic(p0,p1,p2,200)
+
+    def damage(self, source):
+        """The ship has taken damage.
+        Source 0 is an asteroid
+        source 1 is a bullet
+        """
+        self.shields -= 1
+        if self.shields == 0:
+            # KABOOM
+            print "Kaboom"
+            self._state = 4
+        else:
+            print "Shields:", self.shields
+    
+    def is_active(self):
+        """Returns true if the state of this ship is active in the game, able
+        to fire and take damage."""
+        return self._state == 1
