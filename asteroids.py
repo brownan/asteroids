@@ -131,6 +131,7 @@ class Game(object):
                     GLUT_KEY_LEFT: lambda: self.p[0].turn(1),
                     GLUT_KEY_RIGHT: lambda: self.p[0].turn(-1),
                     ' ': lambda: self.p[0].bullets.fire(),
+                    'f': lambda: self.p[0].fly_out(),
             }[key]()
         except KeyError:
             pass
