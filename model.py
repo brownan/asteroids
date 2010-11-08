@@ -204,15 +204,30 @@ class ObjModel(Model):
                     glVertex3dv(pt)
                 glEnd()
 
-
 class AsteroidModel(ObjModel):
+    parsed = None
+    origverts = None
+
     def __init__(self):
         """Generate a randomized asteroid. Starts with a base asteroid.obj, and
         randomly adjusts the magnitudes of all vertices"""
-        super(AsteroidModel, self)._parse_model("asteroid.obj")
+        if AsteroidModel.parsed is None:
+            print "Parsing"
+            super(AsteroidModel, self)._parse_model("asteroid.obj")
+            AsteroidModel.parsed = dict(self.__dict__)
+            AsteroidModel.origverts = [v.copy() for v in self.vertices[1:]]
+        else:
+            self.__dict__ = dict(AsteroidModel.parsed)
 
-        for vertex in self.vertices[1:]:
-            vertex *= random.uniform(0.7,1.3)
+        # Since the vertices array holds objects that are also references by
+        # the polys array, we can't change the objects in the vertices array.
+        # But we can edit the values since numpy arrays are mutable
+        # So, edit the vertex objects in-place, which changes them for every
+        # instance, but it's okay since we take the snapshot into a displaylist
+        # right after
+        print "Perturbing"
+        for vertex, origvertex in zip(self.vertices[1:], AsteroidModel.origverts):
+            vertex[:] = origvertex * random.uniform(0.7, 1.3)
 
         super(AsteroidModel, self)._create_displaylist()
 
