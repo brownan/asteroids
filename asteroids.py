@@ -17,6 +17,7 @@ distance = HEIGHT/2 / math.tan(fov/2*math.pi/180)
 import model
 import entity
 import ship
+import particle
 
 # Constants to draw axis lines
 c = [
@@ -45,12 +46,14 @@ class Game(object):
         # Players
         self.p = []
 
+        # Particle effects:
+        self.particles = particle.Particles()
         # list of all asteroids
         self.asteroids = set()
 
         # Initialize entities
         self.p.append(
-                ship.Ship()
+                ship.Ship(self.particles)
                 )
 
         self.asteroids.add( entity.Asteroid(4,1))
@@ -96,6 +99,8 @@ class Game(object):
         for p in self.p:
             p.draw()
 
+        self.particles.draw()
+
         # flush the command pipeline and swap the buffers to display this frame
         glFlush()
         glutSwapBuffers()
@@ -113,6 +118,8 @@ class Game(object):
             player.update()
 
         self.collision()
+
+        self.particles.update()
 
         # Cause a re-display
         glutPostRedisplay()

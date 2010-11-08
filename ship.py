@@ -21,12 +21,14 @@ class Ship(entity.Entity):
     WRAPDIST = 25
     modelfile = "ship.obj"
 
-    def __init__(self, playernum=0):
+    def __init__(self, particles, playernum=0):
         # Don't call super method, we do our own initialization
         self.model = model.ObjModel(self.modelfile)
         self.pos = numpy.array((WIDTH/2, HEIGHT/2, 0),dtype=float)
         self.scale = 15
         self.radius = 2*self.scale
+
+        self.particles = particles
         
         if playernum != 0:
             # Change the body color of the ship
@@ -103,7 +105,9 @@ class Ship(entity.Entity):
 
         # Thrusting?
         if self._trusting:
+            direction = self.direction()
             self.speed += SHIP_ACCEL * self.direction()
+            self.particles.thrust(self.pos, direction)
         if self._turning:
             self.theta += SHIP_ROTSPEED * self._turning
             self.rot = self.theta
