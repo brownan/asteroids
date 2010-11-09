@@ -106,8 +106,8 @@ class Ship(entity.Entity):
         # Thrusting?
         if self._trusting:
             direction = self.direction()
-            self.speed += SHIP_ACCEL * self.direction()
-            self.particles.thrust(self.pos, direction)
+            self.speed += SHIP_ACCEL * direction
+            self.particles.thrust(self.pos-direction*4, self.speed - direction*2)
         if self._turning:
             self.theta += SHIP_ROTSPEED * self._turning
             self.rot = self.theta
@@ -131,6 +131,8 @@ class Ship(entity.Entity):
             self.pos[1] = HEIGHT + self.WRAPDIST
 
     def _update_bezier(self):
+        direction = self.direction()
+        self.particles.thrust(self.pos-direction*4, self.speed - direction*2)
         self._t += 1
         self.rot += 2
         current = self._bezier.B(self._t)

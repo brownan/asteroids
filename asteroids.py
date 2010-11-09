@@ -56,10 +56,10 @@ class Game(object):
                 ship.Ship(self.particles)
                 )
 
-        self.asteroids.add( entity.Asteroid(4,1))
-        self.asteroids.add( entity.Asteroid(3,1))
-        self.asteroids.add( entity.Asteroid(2,1))
-        self.asteroids.add( entity.Asteroid(1,1))
+        #self.asteroids.add( entity.Asteroid(4,1))
+        #self.asteroids.add( entity.Asteroid(3,1))
+        #self.asteroids.add( entity.Asteroid(2,1))
+        #self.asteroids.add( entity.Asteroid(1,1))
 
         self.t = 0
         self.frameno = 0

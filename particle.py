@@ -9,7 +9,7 @@ import random
 
 """
 
-SPARK_DEGRADE = numpy.array([0.001, 0.005, 0.005], dtype=float)
+SPARK_DEGRADE = numpy.array([0.01, 0.05, 0.05], dtype=float)
 
 class Particles(object):
     def __init__(self):
@@ -25,11 +25,10 @@ class Particles(object):
         for pos, vel, color in self._sparks:
             pos += vel
             color -= SPARK_DEGRADE
-            color[color<0] = 0.0
 
         # Prune dead sparks
         # XXX Could do this in an idle callback
-        while self._sparks and not self._sparks[0][2].any():
+        while self._sparks and self._sparks[0][2][0] <= 0:
             self._sparks.popleft()
 
     def draw(self):
@@ -50,9 +49,9 @@ class Particles(object):
         length to affect the speed.
         
         """
-        for _ in xrange(random.randint(1, 5)):
-            vel = direction * numpy.random.normal(2, scale=0.5, size=(3,))
-            color = numpy.random.uniform(low=0.5, high=1.0, size=(3,))
+        for _ in xrange(random.randint(1, 3)):
+            vel = direction + numpy.random.normal(0, scale=0.2, size=(3,))
+            color = numpy.ones((3,))
             self._sparks.append(
                     (pos.copy(), vel, color)
                     )
