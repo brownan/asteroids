@@ -69,7 +69,7 @@ class Ship(entity.Entity):
         self.shieldmax = 5
         self.shields = self.shieldmax
 
-        self._trusting = 0
+        self._thrusting = 0
         self._turning = 0
         self.fly_in()
 
@@ -105,7 +105,7 @@ class Ship(entity.Entity):
                 p][self._state]()
 
         # Thrusting?
-        if self._trusting:
+        if self._thrusting:
             direction = self.direction()
             self.speed += SHIP_ACCEL * direction
             particle.thrust(self.pos-direction*4, self.speed - direction*2)
@@ -150,7 +150,7 @@ class Ship(entity.Entity):
         """Turns thrust on or off"""
         if self._state != 1:
             return
-        self._trusting = on
+        self._thrusting = on
 
     def turn(self, dir):
         """Turns left or right"""
@@ -188,10 +188,17 @@ class Ship(entity.Entity):
         self.model.draw()
         glPopMatrix()
 
+    def _reset(self):
+        """Resets movement parameters"""
+        print "movement reset"
+        self.speed[:] = 0
+        self._turning = 0
+        self._thrusting = 0
+
     def fly_in(self):
         """Initiates a fly-in"""
         self._state = 2
-        self.speed[:] = 0
+        self._reset()
 
         # Set up a quadratic bezier curve with p0 just behind the camera, p1 at
         # some point near the x/y plane, and p2 at our destination: the center
@@ -229,7 +236,7 @@ class Ship(entity.Entity):
 
     def fly_out(self):
         self._state = 3
-        self.speed[:] = 0
+        self._reset()
         
         # Starting point: the ship's current position
         p0 = numpy.empty((5,))

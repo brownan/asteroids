@@ -6,13 +6,13 @@ This module holds what happens for each level
 
 """
 class Level(object):
-    def __init__(self, levelnum, asteroids):
-        self.levelnum = levelnum
+    def __init__(self, speed, asteroids):
+        self.speed = speed
         self.asteroids = asteroids
 
     def create_asteroids(self):
         """Returns a set of asteroid objects"""
-        maxspeed = self.levelnum
+        maxspeed = self.speed
 
         asteroids = set()
 
@@ -25,7 +25,7 @@ class Level(object):
 
 
 level = [
-        Level(1, [0,0,2]),
+        Level(1, [0,2,0]),
         Level(2, [3,2,0]),
         Level(3, [5,3,1]),
         Level(4, [0,0,0,1]),

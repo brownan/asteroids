@@ -133,7 +133,7 @@ class Asteroid(FloatingEntity):
         self.size = size
         self.maxvel = maxvel
 
-        scale = (size**2 + size * 5)# / 10.0
+        scale = (3*size**2 + size * 5)
 
         self.WRAPDIST = scale*2
 
@@ -145,4 +145,4 @@ class Asteroid(FloatingEntity):
         particle.explosion(self.pos, (1,1,1))
         if self.size == 1:
             return ()
-        return (Asteroid(self.size-1, self.maxvel*1.5, self.pos) for _ in xrange(2))
+        return (Asteroid(self.size-1, self.maxvel*1.1, self.pos) for _ in xrange(2))
