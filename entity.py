@@ -7,6 +7,7 @@ import numpy
 import math
 
 import model
+import particle
 
 def check_collide(ent1, ent2):
     dist = numpy.linalg.norm(ent1.pos - ent2.pos)
@@ -120,6 +121,7 @@ class Asteroid(FloatingEntity):
 
         """
         # Generate a random starting pos
+        # TODO: asteroids appear at the screen edge
         if initialpos is None:
             initialpos = [random.uniform(0,WIDTH),
                     random.uniform(0,HEIGHT), 0]
@@ -140,6 +142,7 @@ class Asteroid(FloatingEntity):
 
     def split(self):
         """Returns two new asteroids with the same momentum as this one."""
+        particle.explosion(self.pos, (1,1,1))
         if self.size == 1:
             return ()
         return (Asteroid(self.size-1, self.maxvel*1.5, self.pos) for _ in xrange(2))

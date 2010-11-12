@@ -10,6 +10,7 @@ import bullets
 import bezier
 import model
 from asteroids import WIDTH, HEIGHT, distance
+import particle
 
 SHIP_ACCEL = 0.1
 SHIP_ROTSPEED = 4
@@ -21,15 +22,15 @@ class Ship(entity.Entity):
     WRAPDIST = 25
     modelfile = "ship.obj"
 
-    def __init__(self, particles, playernum=0):
+    def __init__(self, playernum=0):
         # Don't call super method, we do our own initialization
         self.model = model.ObjModel(self.modelfile)
         self.pos = numpy.array((WIDTH/2, HEIGHT/2, 0),dtype=float)
         self.scale = 15
         self.radius = 2*self.scale
 
-        self.particles = particles
-        
+        self.lives = 3
+
         if playernum != 0:
             # Change the body color of the ship
             pass # TODO
@@ -107,7 +108,7 @@ class Ship(entity.Entity):
         if self._trusting:
             direction = self.direction()
             self.speed += SHIP_ACCEL * direction
-            self.particles.thrust(self.pos-direction*4, self.speed - direction*2)
+            particle.thrust(self.pos-direction*4, self.speed - direction*2)
         if self._turning:
             self.theta += SHIP_ROTSPEED * self._turning
             self.rot = self.theta
@@ -132,7 +133,7 @@ class Ship(entity.Entity):
 
     def _update_bezier(self):
         direction = self.direction()
-        self.particles.thrust(self.pos-direction*4, self.speed - direction*2)
+        particle.thrust(self.pos-direction*4, self.speed - direction*2)
         self._t += 1
         self.rot += 2
         current = self._bezier.B(self._t)
@@ -163,7 +164,6 @@ class Ship(entity.Entity):
         self.bullets.draw()
 
         if self._state == 4:
-            # TODO: draw explosion
             return
 
         glMatrixMode(GL_MODELVIEW)
@@ -191,6 +191,7 @@ class Ship(entity.Entity):
     def fly_in(self):
         """Initiates a fly-in"""
         self._state = 2
+        self.speed[:] = 0
 
         # Set up a quadratic bezier curve with p0 just behind the camera, p1 at
         # some point near the x/y plane, and p2 at our destination: the center
@@ -228,6 +229,7 @@ class Ship(entity.Entity):
 
     def fly_out(self):
         self._state = 3
+        self.speed[:] = 0
         
         # Starting point: the ship's current position
         p0 = numpy.empty((5,))
@@ -264,11 +266,24 @@ class Ship(entity.Entity):
         if self.shields == 0:
             # KABOOM
             print "Kaboom"
-            self._state = 4
+            particle.explosion(self.pos, (0,10,0))
+            if self.lives > 0:
+                self.lives -= 1
+                self.new_ship()
+                self.fly_in()
+            else:
+                self._state = 4
         else:
             print "Shields:", self.shields
+
+    def new_ship(self):
+        """Resets stats and such"""
+        self.shields = self.shieldmax
     
     def is_active(self):
         """Returns true if the state of this ship is active in the game, able
         to fire and take damage."""
         return self._state == 1
+
+    def is_flying(self):
+        return self._state == 2 or self._state == 3

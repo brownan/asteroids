@@ -18,6 +18,7 @@ import model
 import entity
 import ship
 import particle
+import levels
 
 # Constants to draw axis lines
 c = [
@@ -46,23 +47,20 @@ class Game(object):
         # Players
         self.p = []
 
-        # Particle effects:
-        self.particles = particle.Particles()
         # list of all asteroids
         self.asteroids = set()
 
         # Initialize entities
         self.p.append(
-                ship.Ship(self.particles)
+                ship.Ship()
                 )
 
-        #self.asteroids.add( entity.Asteroid(4,1))
-        #self.asteroids.add( entity.Asteroid(3,1))
-        #self.asteroids.add( entity.Asteroid(2,1))
-        #self.asteroids.add( entity.Asteroid(1,1))
+        self.level = 0
 
-        self.t = 0
-        self.frameno = 0
+        # Set up first level
+        self.asteroids.update(
+                levels.level[self.level].create_asteroids()
+                )
 
     def draw(self):
         glMatrixMode(GL_MODELVIEW)
@@ -99,7 +97,7 @@ class Game(object):
         for p in self.p:
             p.draw()
 
-        self.particles.draw()
+        particle.draw()
 
         # flush the command pipeline and swap the buffers to display this frame
         glFlush()
@@ -119,7 +117,9 @@ class Game(object):
 
         self.collision()
 
-        self.particles.update()
+        particle.update()
+
+        self.game_update()
 
         # Cause a re-display
         glutPostRedisplay()
@@ -185,6 +185,18 @@ class Game(object):
 
         self.asteroids -= toremove
         self.asteroids |= toadd
+
+    def game_update(self):
+        """Do various game administration here, such as level progression"""
+        ship = self.p[0]
+        if len(self.asteroids) == 0:
+            if ship.is_active():
+                ship.fly_out()
+            elif not ship.is_flying():
+                # Go to next level
+                self.level += 1
+                self.asteroids.update( levels.level[self.level].create_asteroids() )
+                ship.fly_in()
 
 def main():
     # Init window
