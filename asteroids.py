@@ -19,6 +19,7 @@ import entity
 import ship
 import particle
 import levels
+import hud
 
 # Constants to draw axis lines
 c = [
@@ -62,35 +63,41 @@ class Game(object):
                 levels.level[self.level].create_asteroids()
                 )
 
+        # Setup the HUD
+        self.hud = hud.HUD()
+
     def draw(self):
         glMatrixMode(GL_MODELVIEW)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Draw reference lines around viewport
-        glDisable(GL_LIGHTING)
-        glColor3f(0,1,0)
-        glBegin(GL_LINE_STRIP)
-        glVertex2i(0,0)
-        glVertex2i(WIDTH,0)
-        glVertex2i(WIDTH,HEIGHT)
-        glVertex2i(0,HEIGHT)
-        glVertex2i(0,0)
-        glEnd()
-        for i in range(3):
-            glBegin(GL_LINES)
-            glColor3fv(c[i])
-            glVertex3fv(v[i])
-            glColor3fv(c[3])
-            glVertex3fv(v[3])
+        if 0:
+            glDisable(GL_LIGHTING)
+            glColor3f(0,1,0)
+            glBegin(GL_LINE_STRIP)
+            glVertex2i(0,0)
+            glVertex2i(WIDTH,0)
+            glVertex2i(WIDTH,HEIGHT)
+            glVertex2i(0,HEIGHT)
+            glVertex2i(0,0)
             glEnd()
-        glColor3f(1, 1, 1)
-        draw_string( v[ 0 ][ 0 ], v[ 0 ][ 1 ], v[ 0 ][ 2 ], txt[ 0 ] )
-        draw_string( v[ 1 ][ 0 ], v[ 1 ][ 1 ], v[ 1 ][ 2 ], txt[ 1 ] )
-        draw_string( v[ 2 ][ 0 ], v[ 2 ][ 1 ], v[ 2 ][ 2 ], txt[ 2 ] )
+            for i in range(3):
+                glBegin(GL_LINES)
+                glColor3fv(c[i])
+                glVertex3fv(v[i])
+                glColor3fv(c[3])
+                glVertex3fv(v[3])
+                glEnd()
+            glColor3f(1, 1, 1)
+            draw_string( v[ 0 ][ 0 ], v[ 0 ][ 1 ], v[ 0 ][ 2 ], txt[ 0 ] )
+            draw_string( v[ 1 ][ 0 ], v[ 1 ][ 1 ], v[ 1 ][ 2 ], txt[ 1 ] )
+            draw_string( v[ 2 ][ 0 ], v[ 2 ][ 1 ], v[ 2 ][ 2 ], txt[ 2 ] )
+
+        self.hud.draw()
+
         glEnable(GL_LIGHTING)
 
         # Draw things
-        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [0.8,0.8,0.8]);
         for a in self.asteroids:
             a.draw()
 
