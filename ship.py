@@ -22,7 +22,7 @@ class Ship(entity.Entity):
     WRAPDIST = 25
     modelfile = "ship.obj"
 
-    def __init__(self, playernum=0):
+    def __init__(self, playernum=0, hud=None):
         # Don't call super method, we do our own initialization
         self.model = model.ObjModel(self.modelfile)
         self.pos = numpy.array((WIDTH/2, HEIGHT/2, 0),dtype=float)
@@ -34,6 +34,8 @@ class Ship(entity.Entity):
         if playernum != 0:
             # Change the body color of the ship
             pass # TODO
+        
+        self.hud = hud
 
         # States:
         # 0 - control disabled, nothing happening
@@ -68,6 +70,9 @@ class Ship(entity.Entity):
 
         self.shieldmax = 5
         self.shields = self.shieldmax
+        if self.hud:
+            self.hud.set_shields_max(self.shieldmax)
+            self.hud.set_shields(self.shields)
 
         self._thrusting = 0
         self._turning = 0
@@ -270,6 +275,8 @@ class Ship(entity.Entity):
         source 1 is a bullet
         """
         self.shields -= 1
+        if self.hud:
+            self.hud.set_shields(self.shields)
         if self.shields == 0:
             # KABOOM
             print "Kaboom"
@@ -286,6 +293,8 @@ class Ship(entity.Entity):
     def new_ship(self):
         """Resets stats and such"""
         self.shields = self.shieldmax
+        if self.hud:
+            self.hud.set_shields(self.shields)
     
     def is_active(self):
         """Returns true if the state of this ship is active in the game, able

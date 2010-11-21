@@ -51,9 +51,12 @@ class Game(object):
         # list of all asteroids
         self.asteroids = set()
 
+        # Setup the HUD
+        self.hud = hud.HUD()
+
         # Initialize entities
         self.p.append(
-                ship.Ship()
+                ship.Ship(hud=self.hud)
                 )
 
         self.level = 0
@@ -62,9 +65,6 @@ class Game(object):
         self.asteroids.update(
                 levels.level[self.level].create_asteroids()
                 )
-
-        # Setup the HUD
-        self.hud = hud.HUD()
 
     def draw(self):
         glMatrixMode(GL_MODELVIEW)

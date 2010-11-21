@@ -77,10 +77,10 @@ class HUD(object):
         self.shields_level = get_displaylist()
 
         # initialize hud display list elements
-        self.set_level(0)
-        self.set_lives(3)
-        self.set_shields_max(5)
-        self.set_shields(5)
+        #self.set_level(0)
+        #self.set_lives(3)
+        #self.set_shields_max(5)
+        #self.set_shields(5)
 
         # Create master display list
         self.master_dl = get_displaylist()
@@ -105,7 +105,20 @@ class HUD(object):
         pass
 
     def set_shields(self, amt):
-        pass
+        border = 0.000
+        length = amt * 0.05 - border
+        print "setting shields to", amt
+
+        glNewList(self.shields_level, GL_COMPILE)
+        glColor3f(0.0, 1.0, 0.0)
+        glBegin(GL_QUADS)
+        glVertex2d(0.5+border,       1-0.01-border)
+        glVertex2d(0.5+border,       1-0.02+border)
+        glVertex2d(0.5+length+border,1-0.02+border)
+        glVertex2d(0.5+length+border,1-0.01-border)
+        glEnd()
+
+        glEndList()
 
     def set_shields_max(self, upper):
         length = upper * 0.05
