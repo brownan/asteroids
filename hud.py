@@ -53,13 +53,13 @@ def _make_dl_hud_static():
     dl_num = get_displaylist()
     glNewList(dl_num, GL_COMPILE)
 
-    glColor3f(0.0,1.0,0.0)
-    glBegin(GL_LINE_LOOP)
-    glVertex2d(0.5,0.5)
-    glVertex2d(0.6,0.5)
-    glVertex2d(0.6,0.6)
-    glVertex2d(0.5,0.6)
-    glEnd()
+    #glColor3f(0.0,1.0,0.0)
+    #glBegin(GL_LINE_LOOP)
+    #glVertex2d(0.5,0.5)
+    #glVertex2d(0.6,0.5)
+    #glVertex2d(0.6,0.6)
+    #glVertex2d(0.5,0.6)
+    #glEnd()
 
     glEndList()
     return dl_num
@@ -75,12 +75,6 @@ class HUD(object):
         self.lives_dl = get_displaylist()
         self.shields_outline = get_displaylist()
         self.shields_level = get_displaylist()
-
-        # initialize hud display list elements
-        #self.set_level(0)
-        #self.set_lives(3)
-        #self.set_shields_max(5)
-        #self.set_shields(5)
 
         # Create master display list
         self.master_dl = get_displaylist()
@@ -99,15 +93,14 @@ class HUD(object):
         glCallList(self.master_dl)
 
     def set_level(self, level):
-        pass
+        pass # TODO
 
     def set_lives(self, lives):
-        pass
+        pass # TODO
 
     def set_shields(self, amt):
         border = 0.000
         length = amt * 0.05 - border
-        print "setting shields to", amt
 
         glNewList(self.shields_level, GL_COMPILE)
         glColor3f(0.0, 1.0, 0.0)

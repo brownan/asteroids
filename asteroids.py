@@ -45,8 +45,6 @@ def draw_string(x, y, z, txt):
 
 class Game(object):
     def __init__(self):
-        # Players
-        self.p = []
 
         # list of all asteroids
         self.asteroids = set()
@@ -54,10 +52,8 @@ class Game(object):
         # Setup the HUD
         self.hud = hud.HUD()
 
-        # Initialize entities
-        self.p.append(
-                ship.Ship(hud=self.hud)
-                )
+        # Player
+        self.ship = ship.Ship(hud=self.hud)
 
         self.level = 0
 
@@ -65,6 +61,10 @@ class Game(object):
         self.asteroids.update(
                 levels.level[self.level].create_asteroids()
                 )
+        
+        # Start the game
+        self._update_func = self._update_during_level
+        self.ship.fly_in()
 
     def draw(self):
         glMatrixMode(GL_MODELVIEW)
@@ -101,8 +101,7 @@ class Game(object):
         for a in self.asteroids:
             a.draw()
 
-        for p in self.p:
-            p.draw()
+        self.ship.draw()
 
         particle.draw()
 
@@ -119,8 +118,7 @@ class Game(object):
         for a in self.asteroids:
             a.update()
 
-        for player in self.p:
-            player.update()
+        self.ship.update()
 
         self.collision()
 
@@ -134,19 +132,19 @@ class Game(object):
     def keypress(self, key, x, y):
         """An ascii key was pressed"""
         try:
-            {       GLUT_KEY_UP: lambda: self.p[0].thrust(1),
-                    GLUT_KEY_LEFT: lambda: self.p[0].turn(1),
-                    GLUT_KEY_RIGHT: lambda: self.p[0].turn(-1),
-                    ' ': lambda: self.p[0].bullets.fire(),
+            {       GLUT_KEY_UP: lambda: self.ship.thrust(1),
+                    GLUT_KEY_LEFT: lambda: self.ship.turn(1),
+                    GLUT_KEY_RIGHT: lambda: self.ship.turn(-1),
+                    ' ': lambda: self.ship.bullets.fire(),
             }[key]()
         except KeyError:
             pass
 
     def keyup(self, key, x, y):
         try:
-            {       GLUT_KEY_UP: lambda: self.p[0].thrust(0),
-                    GLUT_KEY_LEFT: lambda: self.p[0].turn(0),
-                    GLUT_KEY_RIGHT: lambda: self.p[0].turn(0),
+            {       GLUT_KEY_UP: lambda: self.ship.thrust(0),
+                    GLUT_KEY_LEFT: lambda: self.ship.turn(0),
+                    GLUT_KEY_RIGHT: lambda: self.ship.turn(0),
             }[key]()
         except KeyError:
             pass
@@ -164,21 +162,19 @@ class Game(object):
         toadd = set()
 
         # Check the ship's bullet against each asteroid
-        for ship in self.p:
-            for bullet in ship.bullets.bullets:
-                for asteroid in self.asteroids:
-                    if entity.check_collide(bullet, asteroid):
-                        # Collide the bullet with the asteroid
-                        bullet.t = 999
-                        newasteroids = asteroid.split()
-                        toadd.update(newasteroids)
-                        toremove.add(asteroid)
+        ship = self.ship
+        for bullet in ship.bullets.bullets:
+            for asteroid in self.asteroids:
+                if entity.check_collide(bullet, asteroid):
+                    # Collide the bullet with the asteroid
+                    bullet.t = 999
+                    newasteroids = asteroid.split()
+                    toadd.update(newasteroids)
+                    toremove.add(asteroid)
 
 
         # Check the ship against each asteroid
-        for ship in self.p:
-            if not ship.is_active():
-                continue
+        if ship.is_active():
             for asteroid in self.asteroids:
                 distance = numpy.linalg.norm(ship.pos - asteroid.pos)
                 if distance < ship.radius + asteroid.radius:
@@ -188,22 +184,69 @@ class Game(object):
                     toremove.add(asteroid)
                     ship.damage(0)
                     if not ship.is_active():
-                        break # go to next ship in ship list
+                        break # skip all other collision checks
 
         self.asteroids -= toremove
         self.asteroids |= toadd
 
     def game_update(self):
         """Do various game administration here, such as level progression"""
-        ship = self.p[0]
-        if len(self.asteroids) == 0:
-            if ship.is_active():
-                ship.fly_out()
-            elif not ship.is_flying():
-                # Go to next level
-                self.level += 1
-                self.asteroids.update( levels.level[self.level].create_asteroids() )
-                ship.fly_in()
+        self._update_func()
+
+    # UPDATE FUNCS BELOW
+    # one of the update functions will be set as self._update_func and called
+    # each frame
+    def _update_during_level(self):
+        """A level is in progress
+        Check to see if all asteroids are dead, or the ship is dead, and change
+        state accordingly
+        """
+        dead = self.ship.is_dead()
+        lvl_complete = len(self.asteroids) == 0
+
+        # TODO: if dead and out of lives, go to game over state
+
+        if dead and lvl_complete:
+            # Go to next level, skip the fly-out
+            self._t = 0
+            self._update_func = self._update_ship_next_level
+
+        elif dead:
+            # Do a fly-in
+            self._t = 0
+            self._update_func = self._update_respawn
+
+        elif lvl_complete:
+            # Do a fly-out
+            self.ship.fly_out()
+            self._update_func = self._update_ship_next_level
+
+    def _update_ship_next_level(self):
+        """The ship is flying out, we are transitioning to a new level.
+        Check if it's done flying out, and then initialize the new level
+        """
+        if self.ship.is_flying():
+            self._t = 0
+        else:
+            self._t += 1
+
+        if self._t >= 100:
+            # Init next level and fly-in
+            self.level += 1
+            self.asteroids.update( levels.level[self.level].create_asteroids() )
+            if self.ship.is_dead():
+                self.ship.new_ship()
+            self.ship.fly_in()
+            self._update_func = self._update_during_level
+
+    def _update_respawn(self):
+        """The ship is dead, and we're going to spawn a new one"""
+        self._t += 1
+        if self._t > 100:
+            self.ship.new_ship()
+            self.ship.fly_in()
+            self._update_func = self._update_during_level
+
 
 def main():
     # Init window

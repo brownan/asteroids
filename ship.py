@@ -15,6 +15,12 @@ import particle
 SHIP_ACCEL = 0.1
 SHIP_ROTSPEED = 4
 
+# Ship states
+SHIP_DEAD = 4 
+SHIP_ACTIVE = 1
+SHIP_FLYING_IN = 2
+SHIP_FLYING_OUT = 3
+
 class Ship(entity.Entity):
     """Represents a player ship.
     
@@ -74,9 +80,9 @@ class Ship(entity.Entity):
             self.hud.set_shields_max(self.shieldmax)
             self.hud.set_shields(self.shields)
 
+        # Initialize movement state vars
         self._thrusting = 0
         self._turning = 0
-        self.fly_in()
 
     def direction(self):
         """Computes the unit vector representing the ship's direction"""
@@ -281,12 +287,8 @@ class Ship(entity.Entity):
             # KABOOM
             print "Kaboom"
             particle.explosion(self.pos, (0,10,0))
-            if self.lives > 0:
-                self.lives -= 1
-                self.new_ship()
-                self.fly_in()
-            else:
-                self._state = 4
+            self.lives -= 1
+            self._state = 4
         else:
             print "Shields:", self.shields
 
@@ -303,3 +305,6 @@ class Ship(entity.Entity):
 
     def is_flying(self):
         return self._state == 2 or self._state == 3
+
+    def is_dead(self):
+        return self._state == SHIP_DEAD
