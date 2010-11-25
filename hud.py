@@ -1,4 +1,11 @@
 from OpenGL.GL import *
+from OpenGL.GLUT import *
+
+def render_string(x, y, string):
+    """Renders a string at the given pos"""
+    glRasterPos2d(x, y)
+    for char in string:
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
 def get_displaylist():
     new_list = glGenLists(1)
@@ -60,6 +67,9 @@ def _make_dl_hud_static():
     #glVertex2d(0.6,0.6)
     #glVertex2d(0.5,0.6)
     #glEnd()
+    render_string(0.01, 0.975, "Level:")
+    render_string(0.2, 0.975, "Lives:")
+    render_string(0.4, 0.975, "Shields:")
 
     glEndList()
     return dl_num
@@ -93,10 +103,20 @@ class HUD(object):
         glCallList(self.master_dl)
 
     def set_level(self, level):
-        pass # TODO
+        glNewList(self.level_dl, GL_COMPILE)
+        glColor3f(0.0, 1.0, 0.0)
+
+        render_string(0.08, 0.975, str(level))
+
+        glEndList()
 
     def set_lives(self, lives):
-        pass # TODO
+        glNewList(self.lives_dl, GL_COMPILE)
+        glColor3f(0.0, 1.0, 0.0)
+
+        render_string(0.27, 0.975, str(lives))
+
+        glEndList()
 
     def set_shields(self, amt):
         border = 0.000

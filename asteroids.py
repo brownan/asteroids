@@ -56,6 +56,7 @@ class Game(object):
         self.ship = ship.Ship(hud=self.hud)
 
         self.level = 0
+        self.hud.set_level(self.level)
 
         # Set up first level
         self.asteroids.update(
@@ -233,6 +234,7 @@ class Game(object):
         if self._t >= 100:
             # Init next level and fly-in
             self.level += 1
+            self.hud.set_level(self.level)
             self.asteroids.update( levels.level[self.level].create_asteroids() )
             if self.ship.is_dead():
                 self.ship.new_ship()
@@ -292,6 +294,10 @@ def main():
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (.6,.6,.6,1))
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
+
+    # Blending
+    glDisable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     # Interpolate shadows with GL_SMOOTH or render each face a single color
     # with GL_FLAT

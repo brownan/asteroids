@@ -1,6 +1,7 @@
 from __future__ import division
 
 from OpenGL.GL import *
+from OpenGL.GLUT import *
 
 import numpy
 import math
@@ -14,6 +15,7 @@ import particle
 
 SHIP_ACCEL = 0.1
 SHIP_ROTSPEED = 4
+SHIP_SHIELD_FADE = 0.08
 
 # Ship states
 SHIP_DEAD = 4 
@@ -36,6 +38,7 @@ class Ship(entity.Entity):
         self.radius = 2*self.scale
 
         self.lives = 3
+        hud.set_lives(self.lives)
 
         if playernum != 0:
             # Change the body color of the ship
@@ -84,6 +87,9 @@ class Ship(entity.Entity):
         self._thrusting = 0
         self._turning = 0
 
+        # Shield visibility
+        self._shield_vis = 0
+
     def direction(self):
         """Computes the unit vector representing the ship's direction"""
         # Start with the ship's un-rotated direction, as a column vector
@@ -126,6 +132,9 @@ class Ship(entity.Entity):
 
         # update bullets
         self.bullets.update()
+
+        if self._shield_vis > 0:
+            self._shield_vis -= SHIP_SHIELD_FADE
 
     def _update_normal(self):
         # Update position based on current speed
@@ -197,6 +206,16 @@ class Ship(entity.Entity):
         glRotated(self.rot, 0,1,0)
 
         self.model.draw()
+
+        # Draw shields
+        if self._shield_vis > 0:
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (0,1,0,self._shield_vis,))
+            glDepthMask(GL_FALSE)
+            glEnable(GL_BLEND)
+            glutSolidSphere(2, 6, 6)
+            glDepthMask(GL_TRUE)
+            glDisable(GL_BLEND)
+
         glPopMatrix()
 
     def _reset(self):
@@ -288,8 +307,11 @@ class Ship(entity.Entity):
             print "Kaboom"
             particle.explosion(self.pos, (0,10,0))
             self.lives -= 1
+            self.hud.set_lives(self.lives)
             self._state = 4
+            self.reset()
         else:
+            self._shield_vis = 1
             print "Shields:", self.shields
 
     def new_ship(self):
