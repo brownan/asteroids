@@ -55,7 +55,7 @@ class Game(object):
         # Player
         self.ship = ship.Ship(hud=self.hud)
 
-        self.level = 0
+        self.level = 1
         self.hud.set_level(self.level)
 
         # Set up first level

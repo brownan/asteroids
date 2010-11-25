@@ -299,9 +299,6 @@ class Ship(entity.Entity):
         Source 0 is an asteroid
         source 1 is a bullet
         """
-        self.shields -= 1
-        if self.hud:
-            self.hud.set_shields(self.shields)
         if self.shields == 0:
             # KABOOM
             print "Kaboom"
@@ -309,8 +306,11 @@ class Ship(entity.Entity):
             self.lives -= 1
             self.hud.set_lives(self.lives)
             self._state = 4
-            self.reset()
+            self._reset()
         else:
+            self.shields -= 1
+            if self.hud:
+                self.hud.set_shields(self.shields)
             self._shield_vis = 1
             print "Shields:", self.shields
 

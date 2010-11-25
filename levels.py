@@ -25,6 +25,7 @@ class Level(object):
 
 
 level = [
+        None, # This array starts at 1
         Level(1, [0,2,0]),
         Level(2, [3,2,0]),
         Level(3, [5,3,1]),
