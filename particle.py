@@ -68,9 +68,9 @@ class Particles(object):
                     (numpy.array(pos), vel, color)
                     )
 
-    def explosion(self, pos, color):
+    def explosion(self, pos, color, initvel=numpy.array([0,0,0],dtype=float)):
         for _ in xrange(random.randint(10,30)):
-            vel = numpy.random.uniform(-4,4, size=(3,))
+            vel = numpy.random.uniform(-4,4, size=(3,)) + initvel
             self._debris.append(
                     (numpy.array(pos, dtype=float), vel, numpy.array(color,dtype=float))
                     )

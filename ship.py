@@ -302,7 +302,7 @@ class Ship(entity.Entity):
         if self.shields == 0:
             # KABOOM
             print "Kaboom"
-            particle.explosion(self.pos, (0,10,0))
+            particle.explosion(self.pos, (0,10,0), self.speed)
             self.lives -= 1
             self.hud.set_lives(self.lives)
             self._state = 4
