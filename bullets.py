@@ -7,6 +7,7 @@ import numpy
 
 import entity
 import model
+import util
 
 from asteroids import WIDTH, HEIGHT
 
@@ -68,6 +69,9 @@ class Bullets(object):
         for b in self.bullets:
             b.draw()
 
+# Is set upon first initialization
+bullet_dl = None
+
 class BulletEnt(entity.Entity):
     WRAPDIST = 25
 
@@ -82,6 +86,15 @@ class BulletEnt(entity.Entity):
 
         # Total time
         self.t = 0
+
+        global bullet_dl
+        if not bullet_dl:
+            bullet_dl = util.get_displaylist()
+            glNewList(bullet_dl, GL_COMPILE)
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (0,1,0,1))
+            glutSolidSphere(5, 5, 5)
+            glEndList()
+
 
     def update(self):
         # update position
@@ -99,8 +112,7 @@ class BulletEnt(entity.Entity):
             self.pos[1] = HEIGHT + self.WRAPDIST
 
     def draw(self):
-        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (0,1,0,1))
         glPushMatrix()
         glTranslated(*self.pos)
-        glutSolidSphere(5, 5, 5)
+        glCallList(bullet_dl)
         glPopMatrix()
