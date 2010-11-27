@@ -147,7 +147,7 @@ class Game(object):
             {       GLUT_KEY_UP: lambda: self.ship.thrust(1),
                     GLUT_KEY_LEFT: lambda: self.ship.turn(1),
                     GLUT_KEY_RIGHT: lambda: self.ship.turn(-1),
-                    ' ': lambda: self.ship.fire(),
+                    ' ': lambda: self.ship.trigger(1),
             }[key]()
         except KeyError:
             pass
@@ -157,6 +157,7 @@ class Game(object):
             {       GLUT_KEY_UP: lambda: self.ship.thrust(0),
                     GLUT_KEY_LEFT: lambda: self.ship.turn(0),
                     GLUT_KEY_RIGHT: lambda: self.ship.turn(0),
+                    ' ': lambda: self.ship.trigger(0),
             }[key]()
         except KeyError:
             pass

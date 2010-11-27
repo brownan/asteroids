@@ -6,6 +6,7 @@ Upgrade ideas:
 
 * fire more bullets at once
 * fire bullets at a faster rate
+* automatic trigger (hold trigger and fires as fast as it can)
 * fire bullets further
 * more shields
 * space-brake (lose speed gradually)

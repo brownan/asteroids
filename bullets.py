@@ -22,7 +22,7 @@ class Bullets(object):
         self.maxbullets = 3
         self.maxtime = 50
         self.speed = 5
-        self.rate = 5 # in frames
+        self.rate = 15 # in frames
 
         self._cooldown = 0
 

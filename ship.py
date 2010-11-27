@@ -85,11 +85,13 @@ class Ship(entity.Entity):
             self.hud.set_shields(self.shields)
 
         # Initialize movement state vars
-        self._thrusting = 0
-        self._turning = 0
+        self._reset()
 
         # Shield visibility
         self._shield_vis = 0
+
+        # Automatic trigger?
+        self.autofire = False
 
     def direction(self):
         """Computes the unit vector representing the ship's direction"""
@@ -130,6 +132,9 @@ class Ship(entity.Entity):
         if self._turning:
             self.theta += SHIP_ROTSPEED * self._turning
             self.rot = self.theta
+
+        if self.autofire and self._trigger:
+            self.fire()
 
         # update bullets
         self.bullets.update()
@@ -225,6 +230,7 @@ class Ship(entity.Entity):
         self.speed[:] = 0
         self._turning = 0
         self._thrusting = 0
+        self._trigger = 0
 
     def fly_in(self):
         """Initiates a fly-in"""
@@ -331,6 +337,12 @@ class Ship(entity.Entity):
 
     def is_dead(self):
         return self._state == SHIP_DEAD
+
+    def trigger(self, on):
+        """Trigger is on or off"""
+        if not self.autofire and on and not self._trigger:
+            self.fire()
+        self._trigger = on
 
     def fire(self):
         """Fire its primary weapon"""
