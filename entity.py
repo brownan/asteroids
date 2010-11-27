@@ -145,4 +145,16 @@ class Asteroid(FloatingEntity):
         particle.explosion(self.pos, (1,1,1))
         if self.size == 1:
             return ()
-        return (Asteroid(self.size-1, self.maxvel*1.1, self.pos) for _ in xrange(2))
+        newasteroids = []
+        split_range = self.radius / 2
+        for _ in xrange(2):
+            newpos = self.pos
+            newpos[:2] += numpy.random.uniform(-split_range, split_range, size=2)
+            newasteroids.append(
+                    Asteroid(
+                        self.size-1,
+                        self.maxvel*1.1,
+                        newpos
+                        )
+                    )
+        return newasteroids
