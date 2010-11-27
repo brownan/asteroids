@@ -147,7 +147,7 @@ class Game(object):
             {       GLUT_KEY_UP: lambda: self.ship.thrust(1),
                     GLUT_KEY_LEFT: lambda: self.ship.turn(1),
                     GLUT_KEY_RIGHT: lambda: self.ship.turn(-1),
-                    ' ': lambda: self.ship.bullets.fire(),
+                    ' ': lambda: self.ship.fire(),
             }[key]()
         except KeyError:
             pass
@@ -179,7 +179,7 @@ class Game(object):
             for asteroid in self.asteroids:
                 if entity.check_collide(bullet, asteroid):
                     # Collide the bullet with the asteroid
-                    bullet.t = 999
+                    bullet.ttl = 0
                     newasteroids = asteroid.split()
                     toadd.update(newasteroids)
                     toremove.add(asteroid)

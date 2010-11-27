@@ -13,13 +13,12 @@ from asteroids import WIDTH, HEIGHT
 
 class Bullets(object):
     """A class to manage a set of bullets"""
-    def __init__(self, ship):
+    def __init__(self):
         # A list of bullet entities
         self.bullets = set()
 
-        self.ship = ship
-
-        # Edit these instance variables to effect things
+        # Various bullet firing parameters. This class doesn't enforce these,
+        # just keep track of them
         self.maxbullets = 3
         self.maxtime = 50
         self.speed = 5
@@ -27,27 +26,21 @@ class Bullets(object):
 
         self._cooldown = 0
 
-    def fire(self):
-        """Fire a bullet"""
+    def can_fire(self):
+        """Returns true if, according to the constraints, should be allowed to
+        fire its weapon"""
         if len(self.bullets) >= self.maxbullets:
-            return
-        if self.ship._state not in (0, 1):
-            return
+            return False
         if self._cooldown > 0:
-            return
+            return False
+        return True
+
+    def fire(self, pos, vel):
+        """Fire a bullet"""
         self._cooldown = self.rate
 
-        shipdirection = self.ship.direction()
-
-        # Fire the bullet from the ship's tip
-        position = self.ship.pos.copy() + self.ship.direction()*20
-
-        # Velocity has a base speed in the direction of the ship, and a
-        # component from the ship's current velocity
-        velocity = self.speed * shipdirection + self.ship.speed
-
         self.bullets.add(
-                BulletEnt(position, velocity)
+                BulletEnt(pos, vel, self.maxtime)
                 )
 
     def update(self):
@@ -59,7 +52,7 @@ class Bullets(object):
         toremove = []
         for b in self.bullets:
             b.update()
-            if b.t > self.maxtime:
+            if b.ttl <= 0:
                 toremove.append(b)
 
         for b in toremove:
@@ -75,7 +68,7 @@ bullet_dl = None
 class BulletEnt(entity.Entity):
     WRAPDIST = 25
 
-    def __init__(self, pos, vel):
+    def __init__(self, pos, vel, ttl):
         super(BulletEnt, self).__init__(
                 None,
                 1
@@ -85,7 +78,7 @@ class BulletEnt(entity.Entity):
         self.speed = numpy.linalg.norm(vel)
 
         # Total time
-        self.t = 0
+        self.ttl = ttl
 
         global bullet_dl
         if not bullet_dl:
@@ -99,7 +92,7 @@ class BulletEnt(entity.Entity):
     def update(self):
         # update position
         self.pos += self.velocity
-        self.t += 1
+        self.ttl -= 1
 
         if self.pos[0] > WIDTH + self.WRAPDIST:
             self.pos[0] = -self.WRAPDIST

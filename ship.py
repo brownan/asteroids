@@ -76,7 +76,7 @@ class Ship(entity.Entity):
         self.accel = 1
 
         # The player's bullets
-        self.bullets = bullets.Bullets(self)
+        self.bullets = bullets.Bullets()
 
         self.shieldmax = 5
         self.shields = self.shieldmax
@@ -331,3 +331,20 @@ class Ship(entity.Entity):
 
     def is_dead(self):
         return self._state == SHIP_DEAD
+
+    def fire(self):
+        """Fire its primary weapon"""
+        if not self.bullets.can_fire() or not self.is_active():
+            return
+
+        # First calculate the trajectory of the bullet
+        shipdirection = self.direction()
+
+        # Fire the bullet from the ship's tip
+        position = self.pos + shipdirection*20
+
+        # Velocity has a base speed in the direction of the ship, and a
+        # component from the ship's current velocity
+        velocity = self.bullets.speed * shipdirection + self.speed
+
+        self.bullets.fire(self.pos, velocity)
