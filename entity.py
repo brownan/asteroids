@@ -21,26 +21,59 @@ class Entity(object):
     which is called each frame.
 
     """
-    def __init__(self, model, initpos, rotaxis, rotangle, radius, scale=1):
-        """Specify a model, initial position, and initial rotation.
-        initpos is a triplet of coordinates to be passed into glTranslate
-        rotaxis is a vector specifying the axis of rotation about the origin
-        rotangle is an angle, in degrees to rotate the entity initially
-
-        Give the scale to scale the model up or down
+    def __init__(self, model, radius):
+        """Specify a model, and a radius for collision detection.
         """
         self.model = model
-        assert len(initpos) == 3
-        self.pos = numpy.array(initpos, dtype=float)
-        assert len(rotaxis) == 3
-        self.rotaxis = numpy.array(rotaxis, dtype=float)
-        self.rotangle = float(rotangle)
-        self.scale = float(scale)
         self.radius = radius
 
     def draw(self):
-        """Draws the model on the screen. You probably don't need to override
-        this"""
+        """Routine for drawing this entity. Subclasses should override this"""
+        raise NotImplementedError()
+
+
+    def update(self):
+        """Override this with anything the entity may want to do each frame"""
+        pass # Override this
+
+# Can't import this before, the base class must be defined before other modules
+# can be imported
+from asteroids import WIDTH, HEIGHT
+
+class FloatingEntity(Entity):
+    """Given an initial velocity and rotational velocity, updates by those
+    constants each frame. Good for asteroids and debris
+    """
+    WRAPDIST = 30
+    def __init__(self, model, initpos, vel, radius, scale=1):
+        """Create a new floating entity with the given model at the given
+        initial position. It will have a the given velocity vel, in world units
+        per frame.
+        """
+
+        assert len(initpos) == 3
+        self.pos = numpy.array(initpos, dtype=float)
+        self.rotangle = 0
+        self.scale = float(scale)
+
+        # Generate a random axis of rotation
+        theta = random.uniform(0, 360)
+        phi = random.uniform(0, 180)
+        rotaxis = [
+                math.cos(theta)*math.sin(phi),
+                math.sin(theta)*math.sin(phi),
+                math.cos(theta),
+                ]
+        self.rotaxis = numpy.array(rotaxis, dtype=float)
+
+        # Generate a random rotational velocity in degrees per frame
+        self.dtheta = random.uniform(-5, 5)
+
+        self.vel = numpy.array(vel, dtype=float)
+
+        super(FloatingEntity, self).__init__(model, radius)
+
+    def draw(self):
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
 
@@ -58,39 +91,6 @@ class Entity(object):
         self.model.draw()
 
         glPopMatrix()
-
-    def update(self):
-        pass # Override this
-
-# Can't import this before, the base class must be defined before other modules
-# can be imported
-from asteroids import WIDTH, HEIGHT
-
-class FloatingEntity(Entity):
-    """Given an initial velocity and rotational velocity, updates by those
-    constants each frame. Good for asteroids and debris
-    """
-    WRAPDIST = 30
-    def __init__(self, model, initpos, vel, radius, scale=1):
-        """Create a new floating entity with the given model at the given
-        initial position. It will have a the given velocity vel, in world units
-        per frame.
-        """
-        # Generate a random axis of rotation
-        theta = random.uniform(0, 360)
-        phi = random.uniform(0, 180)
-        rotaxis = [
-                math.cos(theta)*math.sin(phi),
-                math.sin(theta)*math.sin(phi),
-                math.cos(theta),
-                ]
-
-        # Generate a random rotational velocity in degrees per frame
-        self.dtheta = random.uniform(-5, 5)
-
-        self.vel = numpy.array(vel, dtype=float)
-
-        super(FloatingEntity, self).__init__(model, initpos, rotaxis, 0, radius, scale)
 
     def update(self):
         self.pos += self.vel

@@ -23,6 +23,8 @@ SHIP_ACTIVE = 1
 SHIP_FLYING_IN = 2
 SHIP_FLYING_OUT = 3
 
+SHIP_SCALE = 15
+
 class Ship(entity.Entity):
     """Represents a player ship.
     
@@ -31,11 +33,10 @@ class Ship(entity.Entity):
     modelfile = "ship.obj"
 
     def __init__(self, playernum=0, hud=None):
-        # Don't call super method, we do our own initialization
-        self.model = model.ObjModel(self.modelfile)
+        self.scale = SHIP_SCALE
+        super(Ship, self).__init__(model.ObjModel(self.modelfile), 2*self.scale)
+
         self.pos = numpy.array((WIDTH/2, HEIGHT/2, 0),dtype=float)
-        self.scale = 15
-        self.radius = 2*self.scale
 
         self.lives = 3
         hud.set_lives(self.lives)

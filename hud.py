@@ -1,17 +1,13 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 
+from util import get_displaylist
+
 def render_string(x, y, string):
     """Renders a string at the given pos"""
     glRasterPos2d(x, y)
     for char in string:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
-
-def get_displaylist():
-    new_list = glGenLists(1)
-    if new_list == 0:
-        raise RuntimeError("Could not allocate a display list")
-    return new_list
 
 def _make_dl_hud_prepare():
     """Makes a displaylist that prepares the projection and modelview matrices

@@ -1,5 +1,8 @@
 from __future__ import division
 
+from OpenGL.GLUT import glutSolidSphere
+from OpenGL.GL import *
+
 import numpy
 
 import entity
@@ -70,9 +73,10 @@ class BulletEnt(entity.Entity):
 
     def __init__(self, pos, vel):
         super(BulletEnt, self).__init__(
-                model.Sphere(),
-                pos,
-                (0,0,0), 0, 1, 1)
+                None,
+                1
+                )
+        self.pos = numpy.array(pos, dtype=float)
         self.velocity = vel
         self.speed = numpy.linalg.norm(vel)
 
@@ -93,3 +97,10 @@ class BulletEnt(entity.Entity):
             self.pos[1] = -self.WRAPDIST
         elif self.pos[1] < -self.WRAPDIST:
             self.pos[1] = HEIGHT + self.WRAPDIST
+
+    def draw(self):
+        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (0,1,0,1))
+        glPushMatrix()
+        glTranslated(*self.pos)
+        glutSolidSphere(5, 5, 5)
+        glPopMatrix()
