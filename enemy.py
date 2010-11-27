@@ -3,13 +3,17 @@ import numpy
 
 import entity
 import model
+import bullets
+import particle
 
 class Alien1(entity.Entity):
     """The first alien enemy. Slow. Shoots at the player every once in a
     while"""
 
     model = None
-    health = 50
+
+    # This alien's starting health
+    health = 3
 
     def __init__(self, target):
 
@@ -17,7 +21,7 @@ class Alien1(entity.Entity):
             # Initialize the model for this ship
             Alien1.model = model.ObjModel("alien_torus.obj", scale=10)
 
-        super(Alien1, self).__init__(Alien1.model, 2)
+        super(Alien1, self).__init__(Alien1.model, 20)
 
         # This is who we're shooting at
         self.player = target
@@ -37,7 +41,23 @@ class Alien1(entity.Entity):
         # towards the player
         self.redirect_countdown = 100
 
+        self.bullet_countdown = 80
+
+        self.bullets = bullets.Bullets(color=(1,0,0,1))
+
+    def damage(self, amt):
+        """Damages the alien.
+        Returns True if the alien is destroyed.
+        """
+        self.health -= amt
+        if self.health <= 0:
+            particle.explosion(self.pos, (10,0,0), self.vel)
+            return True
+        return False
+
     def update(self):
+        self.bullets.update()
+
         self.rot += 5
         if self.rot >= 360:
             self.rot -= 360
@@ -45,6 +65,7 @@ class Alien1(entity.Entity):
         self.pos += self.vel
 
         self.redirect_countdown -= 1
+        self.bullet_countdown -= 1
 
         # Gradually slow down our speed
         self.vel *= 0.995
@@ -58,6 +79,20 @@ class Alien1(entity.Entity):
             newdir *= 3
 
             self.vel = newdir
+
+        if self.bullet_countdown <= 0:
+            # Fire a bullet towards the player
+            self.bullet_countdown = 80
+
+            bulvel = self.player.pos - self.pos
+            # normalize to a constant speed
+            bulvel /= numpy.linalg.norm(bulvel)
+            bulvel *= self.bullets.speed
+
+            self.bullets.fire(self.pos, bulvel)
+
+
+
 
     def draw(self):
         glPushMatrix()
@@ -75,3 +110,5 @@ class Alien1(entity.Entity):
         self.model.draw()
 
         glPopMatrix()
+
+        self.bullets.draw()

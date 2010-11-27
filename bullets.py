@@ -13,7 +13,7 @@ from asteroids import WIDTH, HEIGHT
 
 class Bullets(object):
     """A class to manage a set of bullets"""
-    def __init__(self):
+    def __init__(self, color=(0,1,0,1) ):
         # A list of bullet entities
         self.bullets = set()
 
@@ -23,8 +23,11 @@ class Bullets(object):
         self.maxtime = 50
         self.speed = 5
         self.rate = 15 # in frames
+        self.damage = 1
 
         self._cooldown = 0
+
+        self.color = color
 
     def can_fire(self):
         """Returns true if, according to the constraints, should be allowed to
@@ -40,7 +43,7 @@ class Bullets(object):
         self._cooldown = self.rate
 
         self.bullets.add(
-                BulletEnt(pos, vel, self.maxtime)
+                BulletEnt(pos, vel, self.maxtime, self.color)
                 )
 
     def update(self):
@@ -62,13 +65,14 @@ class Bullets(object):
         for b in self.bullets:
             b.draw()
 
-# Is set upon first initialization
-bullet_dl = None
+# Is set upon first initialization of each color
+# maps color tuples to display list numbers
+bullet_dl = {}
 
 class BulletEnt(entity.Entity):
     WRAPDIST = 25
 
-    def __init__(self, pos, vel, ttl):
+    def __init__(self, pos, vel, ttl, color):
         super(BulletEnt, self).__init__(
                 None,
                 1
@@ -80,13 +84,15 @@ class BulletEnt(entity.Entity):
         # Total time
         self.ttl = ttl
 
-        global bullet_dl
-        if not bullet_dl:
-            bullet_dl = util.get_displaylist()
-            glNewList(bullet_dl, GL_COMPILE)
-            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, (0,1,0,1))
+        try:
+            self.dl = bullet_dl[color]
+        except KeyError:
+            self.dl = util.get_displaylist()
+            glNewList(self.dl, GL_COMPILE)
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
             glutSolidSphere(5, 5, 5)
             glEndList()
+            bullet_dl[color] = self.dl
 
 
     def update(self):
@@ -107,5 +113,5 @@ class BulletEnt(entity.Entity):
     def draw(self):
         glPushMatrix()
         glTranslated(*self.pos)
-        glCallList(bullet_dl)
+        glCallList(self.dl)
         glPopMatrix()

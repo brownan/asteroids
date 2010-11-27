@@ -32,7 +32,7 @@ class Ship(entity.Entity):
     WRAPDIST = 25
     modelfile = "ship.obj"
 
-    def __init__(self, playernum=0, hud=None):
+    def __init__(self, hud, playernum=0):
         self.scale = SHIP_SCALE
         super(Ship, self).__init__(model.ObjModel(self.modelfile), 2*self.scale)
 
@@ -80,9 +80,8 @@ class Ship(entity.Entity):
 
         self.shieldmax = 5
         self.shields = self.shieldmax
-        if self.hud:
-            self.hud.set_shields_max(self.shieldmax)
-            self.hud.set_shields(self.shields)
+        self.hud.set_shields_max(self.shieldmax)
+        self.hud.set_shields(self.shields)
 
         # Initialize movement state vars
         self._reset()
@@ -301,31 +300,30 @@ class Ship(entity.Entity):
 
         self._bezier = bezier.Quadratic(p0,p1,p2,200)
 
-    def damage(self, source):
+    def damage(self, damage_amt):
         """The ship has taken damage.
-        Source 0 is an asteroid
-        source 1 is a bullet
+        Base damage amount is 1, the amount that hitting an asteroid does, and
+        the amount that it takes to split an asteroid
         """
+        if not self.is_active():
+            return
         if self.shields == 0:
             # KABOOM
-            print "Kaboom"
             particle.explosion(self.pos, (0,10,0), self.speed)
             self.lives -= 1
             self.hud.set_lives(self.lives)
             self._state = 4
             self._reset()
         else:
-            self.shields -= 1
-            if self.hud:
-                self.hud.set_shields(self.shields)
+            # Be generous, any shields will keep the ship from blowing up
+            self.shields = max(0, self.shields-damage_amt)
+            self.hud.set_shields(self.shields)
             self._shield_vis = 1
-            print "Shields:", self.shields
 
     def new_ship(self):
         """Resets stats and such"""
         self.shields = self.shieldmax
-        if self.hud:
-            self.hud.set_shields(self.shields)
+        self.hud.set_shields(self.shields)
     
     def is_active(self):
         """Returns true if the state of this ship is active in the game, able

@@ -37,7 +37,7 @@ class Particles(object):
         # XXX Could do this in an idle callback
         while self._sparks and self._sparks[0][2][0] <= 0:
             self._sparks.popleft()
-        while self._debris and self._debris[0][2][1] <= 0:
+        while self._debris and numpy.all(self._debris[0][2] <= 0):
             self._debris.popleft()
 
     def draw(self):

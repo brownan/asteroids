@@ -173,10 +173,11 @@ class Game(object):
         # (so as not to mutate the asteroid set while we're iterating over it)
         toremove = set()
         toadd = set()
+        enemies_toremove = set()
 
-        # Check the ship's bullet against each asteroid
         ship = self.ship
         for bullet in ship.bullets.bullets:
+            # Check the ship's bullet against each asteroid
             for asteroid in self.asteroids:
                 if entity.check_collide(bullet, asteroid):
                     # Collide the bullet with the asteroid
@@ -185,9 +186,17 @@ class Game(object):
                     toadd.update(newasteroids)
                     toremove.add(asteroid)
 
+            # Check the player's bullets against alien ships
+            for enemy in self.enemies:
+                if entity.check_collide(bullet, enemy):
+                    bullet.ttl = 0
+                    # Damage the alien ship
+                    if enemy.damage(ship.bullets.damage):
+                        # enemy was destroyed
+                        enemies_toremove.add(enemy)
 
-        # Check the ship against each asteroid
         if ship.is_active():
+            # Check the ship against each asteroid
             for asteroid in self.asteroids:
                 distance = numpy.linalg.norm(ship.pos - asteroid.pos)
                 if distance < ship.radius + asteroid.radius:
@@ -195,12 +204,27 @@ class Game(object):
                     newasteroids = asteroid.split()
                     toadd.update(newasteroids)
                     toremove.add(asteroid)
-                    ship.damage(0)
+                    # hitting an asteroid does 1 damage
+                    ship.damage(1)
                     if not ship.is_active():
                         break # skip all other collision checks
 
+            # Check alien bullets against the player ship
+            for enemy in self.enemies:
+                for bullet in enemy.bullets.bullets:
+                    # Collide this bullet with the player
+                    if entity.check_collide(bullet, self.ship):
+                        # Destroy the bullet
+                        bullet.ttl = 0
+                        # Damage the ship
+                        ship.damage(enemy.bullets.damage)
+
+            # Check player ship for collisions with alien ships
+            # TODO
+
         self.asteroids -= toremove
         self.asteroids |= toadd
+        self.enemies -= enemies_toremove
 
     def game_update(self):
         """Do various game administration here, such as level progression"""
