@@ -4,6 +4,7 @@ from OpenGL.GLUT import glutSolidSphere
 import random
 import numpy
 from collections import defaultdict
+import util
 
 class Model(object):
     """A model that can be drawn on the screen"""
@@ -11,15 +12,18 @@ class Model(object):
     def __init__(self):
         self._create_displaylist()
 
-    def _create_displaylist(self):
+    def _create_displaylist(self, scale=1):
         """Create the display list.
         Sub-classes *should* call this sometime during the initialization
         """
-        self.renderlist = glGenLists(1)
-        if self.renderlist == 0:
-            raise RuntimeError("Could not acquire a display list")
+        self.renderlist = util.get_displaylist()
         glNewList(self.renderlist, GL_COMPILE)
+        if scale != 1:
+            glPushMatrix()
+            glScaled(scale, scale, scale)
         self.render()
+        if scale != 1:
+            glPopMatrix()
         glEndList()
 
     def render(self):
@@ -60,9 +64,9 @@ class _Material(object):
 
 class ObjModel(Model):
     """A model loaded from an obj file"""
-    def __init__(self, fileobj):
+    def __init__(self, fileobj, scale=1):
         self._parse_model(fileobj)
-        self._create_displaylist()
+        self._create_displaylist(scale)
 
     def _parse_model(self, fileobj):
         if isinstance(fileobj, (str, unicode)):

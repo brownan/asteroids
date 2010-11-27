@@ -20,6 +20,7 @@ import ship
 import particle
 import levels
 import hud
+import enemy
 
 # Constants to draw axis lines
 c = [
@@ -57,6 +58,10 @@ class Game(object):
 
         self.level = 1
         self.hud.set_level(self.level)
+
+        # Set of enemies
+        self.enemies = set()
+        self.enemies.add( enemy.Alien1(self.ship) )
 
         # Set up first level
         self.asteroids.update(
@@ -106,6 +111,9 @@ class Game(object):
 
         particle.draw()
 
+        for enemy in self.enemies:
+            enemy.draw()
+
         # flush the command pipeline and swap the buffers to display this frame
         glFlush()
         glutSwapBuffers()
@@ -118,6 +126,9 @@ class Game(object):
         # Change things here
         for a in self.asteroids:
             a.update()
+
+        for enemy in self.enemies:
+            enemy.update()
 
         self.ship.update()
 
