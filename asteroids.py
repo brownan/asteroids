@@ -58,10 +58,10 @@ class Game(object):
 
         self.level = 1
         self.hud.set_level(self.level)
+        self._level_frame = 0
 
         # Set of enemies
         self.enemies = set()
-        self.enemies.add( enemy.Alien1(self.ship) )
 
         # Set up first level
         self.asteroids.update(
@@ -137,6 +137,13 @@ class Game(object):
         particle.update()
 
         self.game_update()
+
+        self._level_frame += 1
+        if self._level_frame % 500 == 0:
+            newalien = levels.level[self.level].enter_alien(self.ship)
+            if newalien:
+                print "Entering new alien now"
+                self.enemies.add(newalien)
 
         # Cause a re-display
         glutPostRedisplay()
@@ -270,6 +277,7 @@ class Game(object):
         if self._t >= 100:
             # Init next level and fly-in
             self.level += 1
+            self._level_frame = 0
             self.hud.set_level(self.level)
             self.asteroids.update( levels.level[self.level].create_asteroids() )
             if self.ship.is_dead():
