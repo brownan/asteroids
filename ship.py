@@ -225,7 +225,6 @@ class Ship(entity.Entity):
 
     def _reset(self):
         """Resets movement parameters"""
-        print "movement reset"
         self.speed[:] = 0
         self._turning = 0
         self._thrusting = 0

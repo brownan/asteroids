@@ -8,8 +8,8 @@ import math
 import numpy
 
 # Define these constants above the imports, some modules use them
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 800
 fov = 45
 
 distance = HEIGHT/2 / math.tan(fov/2*math.pi/180)
@@ -142,7 +142,6 @@ class Game(object):
         if self._level_frame % 500 == 0:
             newalien = levels.level[self.level].enter_alien(self.ship)
             if newalien:
-                print "Entering new alien now"
                 self.enemies.add(newalien)
 
         # Cause a re-display
@@ -246,7 +245,7 @@ class Game(object):
         state accordingly
         """
         dead = self.ship.is_dead()
-        lvl_complete = len(self.asteroids) == 0
+        lvl_complete = len(self.asteroids) == 0 and len(self.enemies) == 0
 
         # TODO: if dead and out of lives, go to game over state
 
@@ -298,7 +297,7 @@ def main():
     # Init window
     glutInit()
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(800, 600)
+    glutInitWindowSize(WIDTH, HEIGHT)
     glutCreateWindow("Asteroids")
 
     g = Game()
@@ -316,7 +315,7 @@ def main():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
-    gluPerspective(fov, WIDTH*1.0/HEIGHT, 10, distance+100)
+    gluPerspective(fov, WIDTH/HEIGHT, 10, distance+100)
 
     # Set up model transformations
     glMatrixMode(GL_MODELVIEW)
